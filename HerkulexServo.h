@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+#define DRS_BROADCAST_ID 0xFE
+
 enum DRSCommand {
   DRS_CMD_EEP_WRITE = 0x01,
   DRS_CMD_EEP_READ  = 0x02,
@@ -101,6 +103,25 @@ enum DRSRAMRegister {
   DRS_RAM_REG_ABSOLUTE_GOAL_POSITION      = 68,
   DRS_RAM_REG_ABSOLUTE_DESIRED_TRAJ_POS   = 70,
   DRS_RAM_REG_DESIRED_VELOCITY            = 72
+};
+
+class HerkulexServoBus {
+  public:
+    HerkulexServoBus();
+    void begin(const Stream &serial_connection);
+    void sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, uint8_t data_len);
+
+  protected:
+    Stream& m_serial;
+};
+
+class HerkulexServo {
+  public:
+    HerkulexServo(HerkulexServoBus &bus, uint8_t id);
+
+  protected:
+    HerkulexServoBus& m_bus;
+    uint8_t m_id;
 };
 
 #endif
