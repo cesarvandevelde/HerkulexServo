@@ -112,7 +112,7 @@ class HerkulexServoBus {
     void sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, uint8_t data_len);
 
   protected:
-    Stream& m_serial;
+    Stream* m_serial;
 };
 
 class HerkulexServo {
@@ -120,7 +120,7 @@ class HerkulexServo {
     HerkulexServo(HerkulexServoBus &bus, uint8_t id);
 
   protected:
-    HerkulexServoBus& m_bus;
+    HerkulexServoBus* m_bus;
     uint8_t m_id;
 };
 
