@@ -40,4 +40,9 @@ void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data =
   m_serial->flush();
 }
 
-HerkulexServo::HerkulexServo(HerkulexServoBus &bus, uint8_t id) : m_bus(bus), m_id(id) {}
+HerkulexServo::HerkulexServo(HerkulexServoBus &bus, uint8_t id) : m_bus(&bus), m_id(id) {}
+
+void HerkulexServo::writeRam(uint8_t reg, uint8_t val) {
+  uint8_t data[] = {reg, 1, val};
+  m_bus->sendPacket(m_id, DRS_CMD_RAM_WRITE, data, 3);
+}
