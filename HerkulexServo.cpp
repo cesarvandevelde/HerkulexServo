@@ -4,7 +4,7 @@ HerkulexServoBus::HerkulexServoBus() : m_serial(nullptr) {
 
 }
 
-void HerkulexServoBus::begin(const Stream &serial_connection) {
+void HerkulexServoBus::begin(Stream &serial_connection) {
   m_serial = &serial_connection;
 }
 

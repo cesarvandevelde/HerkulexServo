@@ -108,7 +108,7 @@ enum DRSRAMRegister {
 class HerkulexServoBus {
   public:
     HerkulexServoBus();
-    void begin(const Stream &serial_connection);
+    void begin(Stream &serial_connection);
     void sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, uint8_t data_len);
 
   protected:
