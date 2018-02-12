@@ -119,6 +119,7 @@ class HerkulexServo {
   public:
     HerkulexServo(HerkulexServoBus &bus, uint8_t id);
     void writeRam(uint8_t reg, uint8_t val);
+    void writeRam(uint8_t reg, uint8_t val1, uint8_t val2);
 
   protected:
     HerkulexServoBus* m_bus;
