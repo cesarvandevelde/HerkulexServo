@@ -52,3 +52,6 @@ void HerkulexServo::writeRam(uint8_t reg, uint8_t val1, uint8_t val2) {
   m_bus->sendPacket(m_id, DRS_CMD_RAM_WRITE, data, 4);
 }
 
+void HerkulexServo::setLedColor(HerkulexLed color){
+  writeRam(DRS_RAM_REG_LED_CONTROL, uint8_t(color));
+}

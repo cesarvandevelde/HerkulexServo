@@ -105,6 +105,20 @@ enum DRSRAMRegister {
   DRS_RAM_REG_DESIRED_VELOCITY            = 72
 };
 
+enum class HerkulexLed : uint8_t {
+  Off = 0x00,
+
+  Red = 0x04,
+  Green = 0x01,
+  Blue = 0x02,
+
+  Yellow = 0x05,
+  Cyan = 0x03,
+  Purple = 0x06,
+
+  White = 0x07
+};
+
 class HerkulexServoBus {
   public:
     HerkulexServoBus();
@@ -120,6 +134,8 @@ class HerkulexServo {
     HerkulexServo(HerkulexServoBus &bus, uint8_t id);
     void writeRam(uint8_t reg, uint8_t val);
     void writeRam(uint8_t reg, uint8_t val1, uint8_t val2);
+
+    void setLedColor(HerkulexLed color);
 
   protected:
     HerkulexServoBus* m_bus;
