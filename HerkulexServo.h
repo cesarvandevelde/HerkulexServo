@@ -107,15 +107,12 @@ enum DRSRAMRegister {
 
 enum class HerkulexLed : uint8_t {
   Off = 0x00,
-
   Red = 0x04,
   Green = 0x01,
   Blue = 0x02,
-
   Yellow = 0x05,
   Cyan = 0x03,
   Purple = 0x06,
-
   White = 0x07
 };
 
@@ -136,6 +133,9 @@ class HerkulexServo {
     void writeRam(uint8_t reg, uint8_t val1, uint8_t val2);
     void writeEep(uint8_t reg, uint8_t val);
     void writeEep(uint8_t reg, uint8_t val1, uint8_t val2);
+
+    void reboot();
+    void rollbackToFactoryDefaults(bool skipID, bool skipBaud);
 
     void setLedColor(HerkulexLed color);
 
