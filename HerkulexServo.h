@@ -123,7 +123,7 @@ class HerkulexServoBus {
   public:
     HerkulexServoBus();
     void begin(Stream &serial_connection);
-    void sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, uint8_t data_len);
+    void sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
 
   protected:
     Stream* m_serial;
@@ -134,6 +134,8 @@ class HerkulexServo {
     HerkulexServo(HerkulexServoBus &bus, uint8_t id);
     void writeRam(uint8_t reg, uint8_t val);
     void writeRam(uint8_t reg, uint8_t val1, uint8_t val2);
+    void writeEep(uint8_t reg, uint8_t val);
+    void writeEep(uint8_t reg, uint8_t val1, uint8_t val2);
 
     void setLedColor(HerkulexLed color);
 
