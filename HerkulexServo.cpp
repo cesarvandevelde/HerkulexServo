@@ -1,14 +1,15 @@
 #include "HerkulexServo.h"
 
-HerkulexServoBus::HerkulexServoBus() : m_serial(nullptr) {
 
-}
+HerkulexServoBus::HerkulexServoBus() : m_serial(nullptr) {}
+
 
 void HerkulexServoBus::begin(Stream &serial_connection) {
   m_serial = &serial_connection;
 }
 
-void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0) {
+
+void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, uint8_t data_len) {
   if (!m_serial) {
     return;
   }
@@ -40,31 +41,203 @@ void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data =
   m_serial->flush();
 }
 
+
+void HerkulexServoBus::update() {
+  if (m_serial->available() > 0) {
+    // push data to buffer
+    while (m_serial->available()) {
+      m_buffer.push(m_serial->read());
+      last_serial = micros();
+    }
+
+    // remove characters before header
+    while (m_buffer.size() >= 2) {
+      if (m_buffer[0] != 0xFF || m_buffer[1] != 0xFF) {
+        m_buffer.shift();
+      } else {
+        break;
+      }
+    }
+
+    // see if packet is complete
+    if (m_buffer.size() >= 9) {  // 7 (min packet length) + 2 (status data)
+      uint8_t packet_len = m_buffer[2];
+      if (m_buffer.size() >= packet_len) {
+        processPacket(false);
+        return;
+      }
+    }
+  }
+
+  if (m_buffer.size() > 0) {  // TODO replace timeout value
+    unsigned long now = micros();
+
+    if (now - last_serial > 500) {
+      processPacket(true);
+      last_serial = now;
+    }
+  }
+}
+
+
+namespace {
+  enum class HerkulexParserState : uint8_t {
+    Header1 = 0,
+    Header2,
+    Length,
+    ID,
+    Command,
+    Checksum1,
+    Checksum2,
+    Data
+  };
+}
+
+void HerkulexServoBus::processPacket(bool timeout) {
+  HerkulexPacket packet = {};
+
+  if (timeout) {
+    packet.packet_error |= HerkulexPacketError::Timeout;
+  }
+
+  uint8_t bytes_to_process;
+  uint8_t checksum1;
+  uint8_t checksum2;
+
+  if (m_buffer.size() >= 9) {
+    // check length field
+    if (m_buffer[2] > m_buffer.size()) {
+      bytes_to_process = m_buffer.size();
+      packet.packet_error |= HerkulexPacketError::Length;
+    } else {
+      bytes_to_process = m_buffer[2];
+    }
+  } else {
+    bytes_to_process = m_buffer.size();
+    packet.packet_error |= HerkulexPacketError::Length;
+  }
+
+  HerkulexParserState state = HerkulexParserState::Header1;
+  uint8_t data_idx = 0;
+
+  while (bytes_to_process > 0) {
+    uint8_t b = m_buffer.shift();
+    bytes_to_process--;
+
+    switch (state) {
+      case HerkulexParserState::Header1:
+        if (b == 0xFF) {
+          state = HerkulexParserState::Header2;
+        }
+        break;
+
+      case HerkulexParserState::Header2:
+        if (b == 0xFF) {
+          state = HerkulexParserState::Length;
+        } else {
+          state = HerkulexParserState::Header1;
+        }
+        break;
+
+      case HerkulexParserState::Length:
+        packet.size = b;
+        checksum1 = b;
+        state = HerkulexParserState::ID;
+        break;
+
+      case HerkulexParserState::ID:
+        packet.id = b;
+        checksum1 ^= b;
+        state = HerkulexParserState::Command;
+        break;
+
+      case HerkulexParserState::Command:
+        if (b > 0x40) {
+          packet.cmd = b - 0x40;
+        } else {
+          packet.cmd = b - 0x40;
+          packet.packet_error |= HerkulexPacketError::Command;
+        }
+        checksum1 ^= b;
+
+        state = HerkulexParserState::Checksum1;
+        break;
+
+      case HerkulexParserState::Checksum1:
+        packet.checksum1 = b;
+        state = HerkulexParserState::Checksum2;
+        break;
+
+      case HerkulexParserState::Checksum2:
+        packet.checksum2 = b;
+        state = HerkulexParserState::Data;
+        break;
+
+      case HerkulexParserState::Data:
+        packet.data[data_idx] = b;
+        checksum1 ^= b;
+        data_idx++; // TODO clamp idx to size of data array
+        break;
+    }
+  }
+
+  if (data_idx >= 2) {
+    packet.status_error = packet.data[data_idx - 2];
+    packet.status_detail = packet.data[data_idx - 1];
+  }
+
+  checksum1 = checksum1 & 0xFE;
+  checksum2 = (~checksum1) & 0xFE;
+
+  if (packet.checksum1 != checksum1 || packet.checksum2 != checksum2) {
+    packet.packet_error |= HerkulexPacketError::Checksum;
+  }
+
+  m_packets.push(packet);
+}
+
+
+bool HerkulexServoBus::getPacket(HerkulexPacket &packet) {
+  if (m_packets.size() == 0) {
+    return false;
+  }
+
+  packet = m_packets.shift();
+  return true;
+}
+
+
 HerkulexServo::HerkulexServo(HerkulexServoBus &bus, uint8_t id) : m_bus(&bus), m_id(id) {}
+
 
 void HerkulexServo::writeRam(uint8_t reg, uint8_t val) {
   uint8_t data[] = {reg, 1, val};
   m_bus->sendPacket(m_id, DRS_CMD_RAM_WRITE, data, 3);
 }
 
+
 void HerkulexServo::writeRam(uint8_t reg, uint8_t val1, uint8_t val2) {
   uint8_t data[] = {reg, 1, val1, val2};
   m_bus->sendPacket(m_id, DRS_CMD_RAM_WRITE, data, 4);
 }
+
 
 void HerkulexServo::writeEep(uint8_t reg, uint8_t val) {
   uint8_t data[] = {reg, 1, val};
   m_bus->sendPacket(m_id, DRS_CMD_EEP_WRITE, data, 3);
 }
 
+
 void HerkulexServo::writeEep(uint8_t reg, uint8_t val1, uint8_t val2) {
   uint8_t data[] = {reg, 1, val1, val2};
   m_bus->sendPacket(m_id, DRS_CMD_EEP_WRITE, data, 4);
 }
 
+
 void HerkulexServo::reboot() {
   m_bus->sendPacket(m_id, DRS_CMD_REBOOT);
 }
+
 
 void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud){
   uint8_t data[2] = {};
@@ -72,6 +245,7 @@ void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud){
   data[1] = skipBaud ? 1 : 0;
   m_bus->sendPacket(m_id, DRS_CMD_ROLLBACK, data, 2);
 }
+
 
 void HerkulexServo::setLedColor(HerkulexLed color){
   writeRam(DRS_RAM_REG_LED_CONTROL, uint8_t(color));

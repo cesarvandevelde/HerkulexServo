@@ -2,6 +2,7 @@
 #define __HERKULEXSERVO_H__
 
 #include <Arduino.h>
+#include <CircularBuffer.h>
 
 #define DRS_BROADCAST_ID 0xFE
 
@@ -116,14 +117,61 @@ enum class HerkulexLed : uint8_t {
   White = 0x07
 };
 
+
+enum class HerkulexPacketError : uint8_t {
+  None     = 0,
+  Timeout  = (1 << 0),
+  Length   = (1 << 1),
+  Command  = (1 << 2),
+  Checksum = (1 << 3)
+};
+
+
+inline HerkulexPacketError operator|(HerkulexPacketError lhs, HerkulexPacketError rhs) {
+  return static_cast<HerkulexPacketError>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+}
+
+
+inline HerkulexPacketError& operator |=(HerkulexPacketError& a, HerkulexPacketError b) {
+  return a = a | b;
+}
+
+
+inline HerkulexPacketError operator&(HerkulexPacketError lhs, HerkulexPacketError rhs) {
+  return static_cast<HerkulexPacketError>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+}
+
+
+struct HerkulexPacket {
+  uint8_t size;
+  uint8_t id;
+  uint8_t cmd;
+  uint8_t checksum1;
+  uint8_t checksum2;
+  uint8_t data[6]; // TODO determine max size
+  uint8_t status_error;
+  uint8_t status_detail;
+  HerkulexPacketError packet_error;
+};
+
+
 class HerkulexServoBus {
   public:
     HerkulexServoBus();
     void begin(Stream &serial_connection);
     void sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
 
+    void update();
+    bool getPacket(HerkulexPacket &packet);
+
   protected:
     Stream* m_serial;
+    CircularBuffer<HerkulexPacket, 3> m_packets;
+    CircularBuffer<uint8_t, 30> m_buffer;
+    unsigned long last_serial;
+
+    void processPacket(bool timeout);
+
 };
 
 class HerkulexServo {
