@@ -19,7 +19,7 @@
 #endif
 
 #ifndef DRS_PACKET_RX_MAX_DATA
-#define DRS_PACKET_RX_MAX_DATA 6  // bytes
+#define DRS_PACKET_RX_MAX_DATA 10  // bytes
 #endif
 
 enum DRSCommand {
@@ -221,10 +221,14 @@ class HerkulexServoBus {
 class HerkulexServo {
   public:
     HerkulexServo(HerkulexServoBus &bus, uint8_t id);
+
     void writeRam(uint8_t reg, uint8_t val);
     void writeRam(uint8_t reg, uint8_t val1, uint8_t val2);
     void writeEep(uint8_t reg, uint8_t val);
     void writeEep(uint8_t reg, uint8_t val1, uint8_t val2);
+
+    uint8_t  readRam(uint8_t reg);
+    uint16_t readRam2(uint8_t reg);
 
     void getStatus(HerkulexStatusError &status_error, HerkulexStatusDetail &status_detail);
     void reboot();

@@ -245,7 +245,7 @@ void HerkulexServo::writeRam(uint8_t reg, uint8_t val) {
 }
 
 
-void HerkulexServo::writeRam(uint8_t reg, uint8_t val1, uint8_t val2) {
+void HerkulexServo::writeRam(uint8_t reg, uint8_t val1, uint8_t val2) {  // TODO: change to uint16_t, little endian
   uint8_t data[] = {reg, 1, val1, val2};
   m_bus->sendPacket(m_id, DRS_CMD_RAM_WRITE, data, 4);
 }
@@ -260,6 +260,26 @@ void HerkulexServo::writeEep(uint8_t reg, uint8_t val) {
 void HerkulexServo::writeEep(uint8_t reg, uint8_t val1, uint8_t val2) {
   uint8_t data[] = {reg, 1, val1, val2};
   m_bus->sendPacket(m_id, DRS_CMD_EEP_WRITE, data, 4);
+}
+
+
+uint8_t HerkulexServo::readRam(uint8_t reg) {
+  uint8_t data[] = {reg, 1};
+  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_RAM_READ, data, 2);
+
+  return m_response.data[2];
+}
+
+
+uint16_t HerkulexServo::readRam2(uint8_t reg) {
+  uint8_t data[] = {reg, 2};
+  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_RAM_READ, data, 2);
+
+  uint16_t ret = m_response.data[3];
+  ret = ret << 8;
+  ret = ret | m_response.data[2];
+
+  return ret;
 }
 
 
