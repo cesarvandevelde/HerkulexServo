@@ -22,6 +22,15 @@
 #define DRS_PACKET_RX_MAX_DATA 10  // bytes
 #endif
 
+#ifndef DRS_SERIAL_RX_BUFFER
+#define DRS_SERIAL_RX_BUFFER 30  // bytes
+#endif
+
+#ifndef DRS_PACKET_RX_BUFFER
+#define DRS_PACKET_RX_BUFFER 3  // HerkulexPacket structs
+#endif
+
+
 enum DRSCommand {
   DRS_CMD_EEP_WRITE = 0x01,
   DRS_CMD_EEP_READ  = 0x02,
@@ -210,8 +219,8 @@ class HerkulexServoBus {
 
   protected:
     Stream* m_serial;
-    CircularBuffer<HerkulexPacket, 3> m_packets;
-    CircularBuffer<uint8_t, 30> m_buffer;
+    CircularBuffer<HerkulexPacket, DRS_PACKET_RX_BUFFER> m_packets;
+    CircularBuffer<uint8_t, DRS_SERIAL_RX_BUFFER> m_buffer;
     unsigned long last_serial;
 
     void processPacket(bool timeout);
