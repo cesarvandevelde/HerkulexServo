@@ -41,6 +41,30 @@ void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, 
   m_serial->flush();
 }
 
+bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0){
+  bool success = false;
+
+  update();
+  m_packets.clear();
+
+  for (uint8_t attempts = 0; attempts < DRS_PACKET_RETRIES; attempts++) {
+    sendPacket(id, cmd, data, data_len);
+
+    while (!getPacket(resp)) {
+      update();
+    }
+
+    if ( (resp.error == HerkulexPacketError:: None) && (resp.id == id) && (resp.cmd == cmd) ) {
+      success = true;
+      break;
+    } else {
+      delayMicroseconds(DRS_PACKET_RESEND_DELAY);
+    }
+  }
+
+  return success;
+}
+
 
 void HerkulexServoBus::update() {
   if (m_serial->available() > 0) {
@@ -97,7 +121,7 @@ void HerkulexServoBus::processPacket(bool timeout) {
   HerkulexPacket packet = {};
 
   if (timeout) {
-    packet.packet_error |= HerkulexPacketError::Timeout;
+    packet.error |= HerkulexPacketError::Timeout;
   }
 
   uint8_t bytes_to_process;
@@ -108,13 +132,13 @@ void HerkulexServoBus::processPacket(bool timeout) {
     // check length field
     if (m_buffer[2] > m_buffer.size()) {
       bytes_to_process = m_buffer.size();
-      packet.packet_error |= HerkulexPacketError::Length;
+      packet.error |= HerkulexPacketError::Length;
     } else {
       bytes_to_process = m_buffer[2];
     }
   } else {
     bytes_to_process = m_buffer.size();
-    packet.packet_error |= HerkulexPacketError::Length;
+    packet.error |= HerkulexPacketError::Length;
   }
 
   HerkulexParserState state = HerkulexParserState::Header1;
@@ -156,7 +180,7 @@ void HerkulexServoBus::processPacket(bool timeout) {
           packet.cmd = b - 0x40;
         } else {
           packet.cmd = b - 0x40;
-          packet.packet_error |= HerkulexPacketError::Command;
+          packet.error |= HerkulexPacketError::Command;
         }
         checksum1 ^= b;
 
@@ -195,7 +219,7 @@ void HerkulexServoBus::processPacket(bool timeout) {
   checksum2 = (~checksum1) & 0xFE;
 
   if (packet.checksum1 != checksum1 || packet.checksum2 != checksum2) {
-    packet.packet_error |= HerkulexPacketError::Checksum;
+    packet.error |= HerkulexPacketError::Checksum;
   }
 
   m_packets.push(packet);

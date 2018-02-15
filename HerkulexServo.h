@@ -10,6 +10,14 @@
 #define DRS_PACKET_RX_TIMEOUT 500  // microseconds
 #endif
 
+#ifndef DRS_PACKET_RETRIES
+#define DRS_PACKET_RETRIES 5
+#endif
+
+#ifndef DRS_PACKET_RESEND_DELAY
+#define DRS_PACKET_RESEND_DELAY 70  // microseconds
+#endif
+
 #ifndef DRS_PACKET_RX_MAX_DATA
 #define DRS_PACKET_RX_MAX_DATA 6  // bytes
 #endif
@@ -159,7 +167,7 @@ struct HerkulexPacket {
   uint8_t data[DRS_PACKET_RX_MAX_DATA];
   uint8_t status_error;
   uint8_t status_detail;
-  HerkulexPacketError packet_error;
+  HerkulexPacketError error;
 };
 
 
@@ -168,6 +176,7 @@ class HerkulexServoBus {
     HerkulexServoBus();
     void begin(Stream &serial_connection);
     void sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
+    bool sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
 
     void update();
     bool getPacket(HerkulexPacket &packet);
