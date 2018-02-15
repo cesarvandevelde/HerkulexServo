@@ -69,10 +69,10 @@ void HerkulexServoBus::update() {
     }
   }
 
-  if (m_buffer.size() > 0) {  // TODO replace timeout value
+  if (m_buffer.size() > 0) {
     unsigned long now = micros();
 
-    if (now - last_serial > 500) {
+    if (now - last_serial > DRS_PACKET_RX_TIMEOUT) {
       processPacket(true);
       last_serial = now;
     }
@@ -176,7 +176,12 @@ void HerkulexServoBus::processPacket(bool timeout) {
       case HerkulexParserState::Data:
         packet.data[data_idx] = b;
         checksum1 ^= b;
-        data_idx++; // TODO clamp idx to size of data array
+        data_idx++;
+
+        // clamp idx to size of data array
+        if (data_idx >= DRS_PACKET_RX_MAX_DATA) {
+          data_idx = DRS_PACKET_RX_MAX_DATA - 1;
+        }
         break;
     }
   }

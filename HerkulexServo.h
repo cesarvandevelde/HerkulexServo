@@ -6,6 +6,14 @@
 
 #define DRS_BROADCAST_ID 0xFE
 
+#ifndef DRS_PACKET_RX_TIMEOUT
+#define DRS_PACKET_RX_TIMEOUT 500  // microseconds
+#endif
+
+#ifndef DRS_PACKET_RX_MAX_DATA
+#define DRS_PACKET_RX_MAX_DATA 6  // bytes
+#endif
+
 enum DRSCommand {
   DRS_CMD_EEP_WRITE = 0x01,
   DRS_CMD_EEP_READ  = 0x02,
@@ -148,7 +156,7 @@ struct HerkulexPacket {
   uint8_t cmd;
   uint8_t checksum1;
   uint8_t checksum2;
-  uint8_t data[6]; // TODO determine max size
+  uint8_t data[DRS_PACKET_RX_MAX_DATA];
   uint8_t status_error;
   uint8_t status_detail;
   HerkulexPacketError packet_error;
