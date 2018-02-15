@@ -9,7 +9,7 @@ void HerkulexServoBus::begin(Stream &serial_connection) {
 }
 
 
-void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, uint8_t data_len) {
+void HerkulexServoBus::sendPacket(uint8_t id, HerkulexCommand cmd, const uint8_t* data, uint8_t data_len) {
   if (!m_serial) {
     return;
   }
@@ -17,9 +17,9 @@ void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, 
   uint8_t checksum1;
   uint8_t checksum2;
   uint8_t packet_size = 7 + data_len;
-  uint8_t packet[7] = {0xFF, 0xFF, packet_size, id, cmd, 0x00, 0x00};
+  uint8_t packet[7] = {0xFF, 0xFF, packet_size, id, static_cast<uint8_t>(cmd), 0x00, 0x00};
 
-  checksum1 = packet_size ^ id ^ cmd;
+  checksum1 = packet_size ^ id ^ static_cast<uint8_t>(cmd);
 
   if (data && data_len > 0) {
      for (uint8_t i = 0; i < data_len; i++) {
@@ -41,7 +41,7 @@ void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, 
   m_serial->flush();
 }
 
-bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, uint8_t cmd, const uint8_t* data, uint8_t data_len){
+bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, HerkulexCommand cmd, const uint8_t* data, uint8_t data_len){
   bool success = false;
 
   update();
@@ -177,9 +177,9 @@ void HerkulexServoBus::processPacket(bool timeout) {
 
       case HerkulexParserState::Command:
         if (b > 0x40) {
-          packet.cmd = b - 0x40;
+          packet.cmd = static_cast<HerkulexCommand>(b - 0x40);
         } else {
-          packet.cmd = b - 0x40;
+          packet.cmd = static_cast<HerkulexCommand>(b);
           packet.error |= HerkulexPacketError::Command;
         }
         checksum1 ^= b;
@@ -239,49 +239,49 @@ bool HerkulexServoBus::getPacket(HerkulexPacket &packet) {
 HerkulexServo::HerkulexServo(HerkulexServoBus &bus, uint8_t id) : m_bus(&bus), m_id(id) {}
 
 
-void HerkulexServo::writeRam(uint8_t reg, uint8_t val) {
-  uint8_t data[] = {reg, 1, val};
-  m_bus->sendPacket(m_id, DRS_CMD_RAM_WRITE, data, 3);
+void HerkulexServo::writeRam(HerkulexRamRegister reg, uint8_t val) {
+  uint8_t data[] = {static_cast<uint8_t>(reg), 1, val};
+  m_bus->sendPacket(m_id, HerkulexCommand::RamWrite, data, 3);
 }
 
 
-void HerkulexServo::writeRam2(uint8_t reg, uint16_t val) {
+void HerkulexServo::writeRam2(HerkulexRamRegister reg, uint16_t val) {
   uint8_t val1, val2;
   val1 = static_cast<uint8_t>(val);
   val2 = static_cast<uint8_t>(val >> 8);
 
-  uint8_t data[] = {reg, 2, val1, val2};
-  m_bus->sendPacket(m_id, DRS_CMD_RAM_WRITE, data, 4);
+  uint8_t data[] = {static_cast<uint8_t>(reg), 2, val1, val2};
+  m_bus->sendPacket(m_id, HerkulexCommand::RamWrite, data, 4);
 }
 
 
-void HerkulexServo::writeEep(uint8_t reg, uint8_t val) {
-  uint8_t data[] = {reg, 1, val};
-  m_bus->sendPacket(m_id, DRS_CMD_EEP_WRITE, data, 3);
+void HerkulexServo::writeEep(HerkulexEepRegister reg, uint8_t val) {
+  uint8_t data[] = {static_cast<uint8_t>(reg), 1, val};
+  m_bus->sendPacket(m_id, HerkulexCommand::EepWrite, data, 3);
 }
 
 
-void HerkulexServo::writeEep2(uint8_t reg, uint16_t val) {
+void HerkulexServo::writeEep2(HerkulexEepRegister reg, uint16_t val) {
   uint8_t val1, val2;
   val1 = static_cast<uint8_t>(val);
   val2 = static_cast<uint8_t>(val >> 8);
 
-  uint8_t data[] = {reg, 2, val1, val2};
-  m_bus->sendPacket(m_id, DRS_CMD_EEP_WRITE, data, 4);
+  uint8_t data[] = {static_cast<uint8_t>(reg), 2, val1, val2};
+  m_bus->sendPacket(m_id, HerkulexCommand::EepWrite, data, 4);
 }
 
 
-uint8_t HerkulexServo::readRam(uint8_t reg) {
-  uint8_t data[] = {reg, 1};
-  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_RAM_READ, data, 2);
+uint8_t HerkulexServo::readRam(HerkulexRamRegister reg) {
+  uint8_t data[] = {static_cast<uint8_t>(reg), 1};
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::RamRead, data, 2);
 
   return m_response.data[2];
 }
 
 
-uint16_t HerkulexServo::readRam2(uint8_t reg) {
-  uint8_t data[] = {reg, 2};
-  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_RAM_READ, data, 2);
+uint16_t HerkulexServo::readRam2(HerkulexRamRegister reg) {
+  uint8_t data[] = {static_cast<uint8_t>(reg), 2};
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::RamRead, data, 2);
 
   uint16_t ret = m_response.data[3];
   ret = ret << 8;
@@ -291,16 +291,16 @@ uint16_t HerkulexServo::readRam2(uint8_t reg) {
 }
 
 
-uint8_t HerkulexServo::readEep(uint8_t reg) {
-  uint8_t data[] = {reg, 1};
-  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_EEP_READ, data, 2);
+uint8_t HerkulexServo::readEep(HerkulexEepRegister reg) {
+  uint8_t data[] = {static_cast<uint8_t>(reg), 1};
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::EepRead, data, 2);
 
   return m_response.data[2];
 }
 
-uint16_t HerkulexServo::readEep2(uint8_t reg) {
-  uint8_t data[] = {reg, 2};
-  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_EEP_READ, data, 2);
+uint16_t HerkulexServo::readEep2(HerkulexEepRegister reg) {
+  uint8_t data[] = {static_cast<uint8_t>(reg), 2};
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::EepRead, data, 2);
 
   uint16_t ret = m_response.data[3];
   ret = ret << 8;
@@ -311,14 +311,14 @@ uint16_t HerkulexServo::readEep2(uint8_t reg) {
 
 
 void HerkulexServo::getStatus(HerkulexStatusError &error, HerkulexStatusDetail &detail) {
-  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_STAT);
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::Stat);
   error = static_cast<HerkulexStatusError>(m_response.data[0]);
   detail = static_cast<HerkulexStatusDetail>(m_response.data[1]);
 }
 
 
 void HerkulexServo::reboot() {
-  m_bus->sendPacket(m_id, DRS_CMD_REBOOT);
+  m_bus->sendPacket(m_id, HerkulexCommand::Reboot);
 }
 
 
@@ -326,10 +326,10 @@ void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud){
   uint8_t data[2] = {};
   data[0] = skipID ? 1 : 0;
   data[1] = skipBaud ? 1 : 0;
-  m_bus->sendPacket(m_id, DRS_CMD_ROLLBACK, data, 2);
+  m_bus->sendPacket(m_id, HerkulexCommand::Rollback, data, 2);
 }
 
 
 void HerkulexServo::setLedColor(HerkulexLed color){
-  writeRam(DRS_RAM_REG_LED_CONTROL, uint8_t(color));
+  writeRam(HerkulexRamRegister::LedControl, uint8_t(color));
 }

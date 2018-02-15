@@ -31,115 +31,115 @@
 #endif
 
 
-enum DRSCommand {
-  DRS_CMD_EEP_WRITE = 0x01,
-  DRS_CMD_EEP_READ  = 0x02,
-  DRS_CMD_RAM_WRITE = 0x03,
-  DRS_CMD_RAM_READ  = 0x04,
-  DRS_CMD_I_JOG     = 0x05,
-  DRS_CMD_S_JOG     = 0x06,
-  DRS_CMD_STAT      = 0x07,
-  DRS_CMD_ROLLBACK  = 0x08,
-  DRS_CMD_REBOOT    = 0x09
+enum class HerkulexCommand {
+  EepWrite  = 0x01,
+  EepRead   = 0x02,
+  RamWrite  = 0x03,
+  RamRead   = 0x04,
+  IJog      = 0x05,
+  SJog      = 0x06,
+  Stat      = 0x07,
+  Rollback  = 0x08,
+  Reboot    = 0x09
 };
 
-enum DRSEEPRegister {
-  DRS_EEP_REG_MODEL_NO1                   = 0,
-  DRS_EEP_REG_MODEL_NO2                   = 1,
-  DRS_EEP_REG_VERSION1                    = 2,
-  DRS_EEP_REG_VERSION2                    = 3,
-  DRS_EEP_REG_BAUD_RATE                   = 4,
-  DRS_EEP_REG_ID                          = 6,
-  DRS_EEP_REG_ACK_POLICY                  = 7,
-  DRS_EEP_REG_ALARM_LED_POLICY            = 8,
-  DRS_EEP_REG_TORQUE_POLICY               = 9,
-  DRS_EEP_REG_MAX_TEMPERATURE             = 11,
-  DRS_EEP_REG_MIN_VOLTAGE                 = 12,
-  DRS_EEP_REG_MAX_VOLTAGE                 = 13,
-  DRS_EEP_REG_ACCELARATION_RATIO          = 14,
-  DRS_EEP_REG_MAX_ACCELERATION_TIME       = 15,
-  DRS_EEP_REG_DEAD_ZONE                   = 16,
-  DRS_EEP_REG_SATURATOR_OFFSET            = 17,
-  DRS_EEP_REG_SATURATOR_SLOPE             = 18,
-  DRS_EEP_REG_PWM_OFFSET                  = 20,
-  DRS_EEP_REG_MIN_PWM                     = 21,
-  DRS_EEP_REG_MAX_PWM                     = 22,
-  DRS_EEP_REG_OVERLOAD_PWM_THRESHOLD      = 24,
-  DRS_EEP_REG_MIN_POSITION                = 26,
-  DRS_EEP_REG_MAX_POSITION                = 28,
-  DRS_EEP_REG_POSITION_KP                 = 30,
-  DRS_EEP_REG_POSITION_KD                 = 32,
-  DRS_EEP_REG_POSITION_KI                 = 34,
-  DRS_EEP_REG_POSITION_FF_1ST_GAIN        = 36,
-  DRS_EEP_REG_POSITION_FF_2ND_GAIN        = 38,
-  DRS_EEP_REG_LED_BLINK_PERIOD            = 44,
-  DRS_EEP_REG_ADC_FAULT_CHECK_PERIOD      = 45,
-  DRS_EEP_REG_PACKET_GARBAGE_CHECK_PERIOD = 46,
-  DRS_EEP_REG_STOP_DETECTION_PERIOD       = 47,
-  DRS_EEP_REG_OVERLOAD_PROTECTION_PERIOD  = 48,
-  DRS_EEP_REG_STOP_THRESHOLD              = 49,
-  DRS_EEP_REG_INPOSITION_MARGIN           = 50,
-  DRS_EEP_REG_CALIBRATION_DIFFERENCE      = 53
+enum class HerkulexEepRegister {
+  ModelNo1                 = 0,
+  ModelNo2                 = 1,
+  Version1                 = 2,
+  Version2                 = 3,
+  BaudRate                 = 4,
+  ID                       = 6,
+  AckPolicy                = 7,
+  AlarmLedPolicy           = 8,
+  TorquePolicy             = 9,
+  MaxTemperature           = 11,
+  MinVoltage               = 12,
+  MaxVoltage               = 13,
+  AccelerationRatio        = 14,
+  MaxAccelerationTime      = 15,
+  DeadZone                 = 16,
+  SaturatorOffset          = 17,
+  SaturatorSlope           = 18,
+  PwmOffset                = 20,
+  MinPwm                   = 21,
+  MaxPwm                   = 22,
+  OverloadPwmThreshold     = 24,
+  MinPosition              = 26,
+  MaxPosition              = 28,
+  PositionKp               = 30,
+  PositionKd               = 32,
+  PositionKi               = 34,
+  PositionFF1stGain        = 36,
+  PositionFF2ndGain        = 38,
+  LedBlinkPeriod           = 44,
+  AdcFaultCheckPeriod      = 45,
+  PacketGarbageCheckPeriod = 46,
+  StopDetectionPeriod      = 47,
+  OverloadProtectionPeriod = 48,
+  StopThreshold            = 49,
+  InPositionMargin         = 50,
+  CalibrationDifference    = 53
 };
 
-enum DRSRAMRegister {
-  DRS_RAM_REG_ID                          = 0,
-  DRS_RAM_REG_ACK_POLICY                  = 1,
-  DRS_RAM_REG_ALARM_LED_POLICY            = 2,
-  DRS_RAM_REG_TORQUE_POLICY               = 3,
-  DRS_RAM_REG_MAX_TEMPERATURE             = 5,
-  DRS_RAM_REG_MIN_VOLTAGE                 = 6,
-  DRS_RAM_REG_MAX_VOLTAGE                 = 7,
-  DRS_RAM_REG_ACCELARATION_RATIO          = 8,
-  DRS_RAM_REG_MAX_ACCELERATION_TIME       = 9,
-  DRS_RAM_REG_DEAD_ZONE                   = 10,
-  DRS_RAM_REG_SATURATOR_OFFSET            = 11,
-  DRS_RAM_REG_SATURATOR_SLOPE             = 12,
-  DRS_RAM_REG_PWM_OFFSET                  = 14,
-  DRS_RAM_REG_MIN_PWM                     = 15,
-  DRS_RAM_REG_MAX_PWM                     = 16,
-  DRS_RAM_REG_OVERLOAD_PWM_THRESHOLD      = 18,
-  DRS_RAM_REG_MIN_POSITION                = 20,
-  DRS_RAM_REG_MAX_POSITION                = 22,
-  DRS_RAM_REG_POSITION_KP                 = 24,
-  DRS_RAM_REG_POSITION_KD                 = 26,
-  DRS_RAM_REG_POSITION_KI                 = 28,
-  DRS_RAM_REG_POSITION_FF_1ST_GAIN        = 30,
-  DRS_RAM_REG_POSITION_FF_2ND_GAIN        = 32,
-  DRS_RAM_REG_LED_BLINK_PERIOD            = 38,
-  DRS_RAM_REG_ADC_FAULT_CHECK_PERIOD      = 39,
-  DRS_RAM_REG_PACKET_GARBAGE_CHECK_PERIOD = 40,
-  DRS_RAM_REG_STOP_DETECTION_PERIOD       = 41,
-  DRS_RAM_REG_OVERLOAD_PROTECTION_PERIOD  = 42,
-  DRS_RAM_REG_STOP_THRESHOLD              = 43,
-  DRS_RAM_REG_INPOSITION_MARGIN           = 44,
-  DRS_RAM_REG_CALIBRATION_DIFFERENCE      = 47,
-  DRS_RAM_REG_STATUS_ERROR                = 48,
-  DRS_RAM_REG_STATUS_DETAIL               = 49,
-  DRS_RAM_REG_TORQUE_CONTROL              = 52,
-  DRS_RAM_REG_LED_CONTROL                 = 53,
-  DRS_RAM_REG_VOLTAGE                     = 54,
-  DRS_RAM_REG_TEMPERATURE                 = 55,
-  DRS_RAM_REG_CURRENT_CONTROL_MODE        = 56,
-  DRS_RAM_REG_TICK                        = 57,
-  DRS_RAM_REG_CALIBRATED_POSITION         = 58,
-  DRS_RAM_REG_ABSOLUTE_POSITION           = 60,
-  DRS_RAM_REG_DIFFERENTIAL_POSITION       = 62,
-  DRS_RAM_REG_PWM                         = 64,
-  DRS_RAM_REG_ABSOLUTE_GOAL_POSITION      = 68,
-  DRS_RAM_REG_ABSOLUTE_DESIRED_TRAJ_POS   = 70,
-  DRS_RAM_REG_DESIRED_VELOCITY            = 72
+enum class HerkulexRamRegister {
+  ID                       = 0,
+  AckPolicy                = 1,
+  AlarmLedPolicy           = 2,
+  TorquePolicy             = 3,
+  MaxTemperature           = 5,
+  MinVoltage               = 6,
+  MaxVoltage               = 7,
+  AccelerationRatio        = 8,
+  MaxAccelerationTime      = 9,
+  DeadZone                 = 10,
+  SaturatorOffset          = 11,
+  SaturatorSlope           = 12,
+  PwmOffset                = 14,
+  MinPwm                   = 15,
+  MaxPwm                   = 16,
+  OverloadPwmThreshold     = 18,
+  MinPosition              = 20,
+  MaxPosition              = 22,
+  PositionKp               = 24,
+  PositionKd               = 26,
+  PositionKi               = 28,
+  PositionFF1stGain        = 30,
+  PositionFF2ndGain        = 32,
+  LedBlinkPeriod           = 38,
+  AdcFaultCheckPeriod      = 39,
+  PacketGarbageCheckPeriod = 40,
+  StopDetectionPeriod      = 41,
+  OverloadProtectionPeriod = 42,
+  StopThreshold            = 43,
+  InPositionMargin         = 44,
+  CalibrationDifference    = 47,
+  StatusError              = 48,
+  StatusDetail             = 49,
+  TorqueControl            = 52,
+  LedControl               = 53,
+  Voltage                  = 54,
+  Temperature              = 55,
+  CurrentControlMode       = 56,
+  Tick                     = 57,
+  CalibratedPosition       = 58,
+  AbsolutePosition         = 60,
+  DifferentialPosition     = 62,
+  Pwm                      = 64,
+  AbsoluteGoalPosition     = 68,
+  AbsoluteDesiredTrajPos   = 70,
+  DesiredVelocity          = 72
 };
 
 enum class HerkulexLed : uint8_t {
-  Off = 0x00,
-  Red = 0x04,
-  Green = 0x01,
-  Blue = 0x02,
+  Off    = 0x00,
+  Red    = 0x04,
+  Green  = 0x01,
+  Blue   = 0x02,
   Yellow = 0x05,
-  Cyan = 0x03,
+  Cyan   = 0x03,
   Purple = 0x06,
-  White = 0x07
+  White  = 0x07
 };
 
 
@@ -197,7 +197,7 @@ ENUM_FLAG_ASSIGNMENT_OPERATOR(HerkulexStatusDetail, |=, |)
 struct HerkulexPacket {
   uint8_t size;
   uint8_t id;
-  uint8_t cmd;
+  HerkulexCommand cmd;
   uint8_t checksum1;
   uint8_t checksum2;
   uint8_t data[DRS_PACKET_RX_MAX_DATA];
@@ -211,8 +211,8 @@ class HerkulexServoBus {
   public:
     HerkulexServoBus();
     void begin(Stream &serial_connection);
-    void sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
-    bool sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
+    void sendPacket(uint8_t id, HerkulexCommand cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
+    bool sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, HerkulexCommand cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
 
     void update();
     bool getPacket(HerkulexPacket &packet);
@@ -231,15 +231,15 @@ class HerkulexServo {
   public:
     HerkulexServo(HerkulexServoBus &bus, uint8_t id);
 
-    void writeRam(uint8_t reg, uint8_t val);
-    void writeRam2(uint8_t reg, uint16_t val);
-    void writeEep(uint8_t reg, uint8_t val);
-    void writeEep2(uint8_t reg, uint16_t val);
+    void writeRam(HerkulexRamRegister reg, uint8_t val);
+    void writeRam2(HerkulexRamRegister reg, uint16_t val);
+    void writeEep(HerkulexEepRegister reg, uint8_t val);
+    void writeEep2(HerkulexEepRegister reg, uint16_t val);
 
-    uint8_t  readRam(uint8_t reg);
-    uint16_t readRam2(uint8_t reg);
-    uint8_t  readEep(uint8_t reg);
-    uint16_t readEep2(uint8_t reg);
+    uint8_t  readRam(HerkulexRamRegister reg);
+    uint16_t readRam2(HerkulexRamRegister reg);
+    uint8_t  readEep(HerkulexEepRegister reg);
+    uint16_t readEep2(HerkulexEepRegister reg);
 
     void getStatus(HerkulexStatusError &status_error, HerkulexStatusDetail &status_detail);
     void reboot();
