@@ -134,28 +134,55 @@ enum class HerkulexLed : uint8_t {
 };
 
 
+#define ENUM_FLAG_OPERATOR(T,X) inline T operator X (T lhs, T rhs) { return (T) (static_cast<uint8_t>(lhs) X static_cast<uint8_t>(rhs)); }
+#define ENUM_FLAG_ASSIGNMENT_OPERATOR(T,X,Y) inline T& operator X (T& lhs, const T& rhs) { return lhs = (lhs Y rhs); }
+
+
 enum class HerkulexPacketError : uint8_t {
   None     = 0,
-  Timeout  = (1 << 0),
-  Length   = (1 << 1),
-  Command  = (1 << 2),
-  Checksum = (1 << 3)
+  Timeout  = 0b00000001,
+  Length   = 0b00000010,
+  Command  = 0b00000100,
+  Checksum = 0b00001000
 };
 
-
-inline HerkulexPacketError operator|(HerkulexPacketError lhs, HerkulexPacketError rhs) {
-  return static_cast<HerkulexPacketError>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
-}
-
-
-inline HerkulexPacketError& operator |=(HerkulexPacketError& a, HerkulexPacketError b) {
-  return a = a | b;
-}
+ENUM_FLAG_OPERATOR(HerkulexPacketError, |)
+ENUM_FLAG_OPERATOR(HerkulexPacketError, &)
+ENUM_FLAG_ASSIGNMENT_OPERATOR(HerkulexPacketError, |=, |)
 
 
-inline HerkulexPacketError operator&(HerkulexPacketError lhs, HerkulexPacketError rhs) {
-  return static_cast<HerkulexPacketError>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
-}
+enum class HerkulexStatusError : uint8_t {
+  None             = 0,
+  InputVoltage     = 0b00000001,
+  PotLimit         = 0b00000010,
+  TemperatureLimit = 0b00000100,
+  InvalidPacket    = 0b00001000,
+  Overload         = 0b00010000,
+  DriverFault      = 0b00100000,
+  EEPDistorted     = 0b01000000,
+  Reserved         = 0b10000000
+};
+
+ENUM_FLAG_OPERATOR(HerkulexStatusError, |)
+ENUM_FLAG_OPERATOR(HerkulexStatusError, &)
+ENUM_FLAG_ASSIGNMENT_OPERATOR(HerkulexStatusError, |=, |)
+
+
+enum class HerkulexStatusDetail : uint8_t {
+  None            = 0,
+  Moving          = 0b00000001,
+  InPosition      = 0b00000010,
+  ChecksumError   = 0b00000100,
+  UnknownCommand  = 0b00001000,
+  ExceedRegRange  = 0b00010000,
+  GarbageDetected = 0b00100000,
+  MotorOn         = 0b01000000,
+  Reserved        = 0b10000000
+};
+
+ENUM_FLAG_OPERATOR(HerkulexStatusDetail, |)
+ENUM_FLAG_OPERATOR(HerkulexStatusDetail, &)
+ENUM_FLAG_ASSIGNMENT_OPERATOR(HerkulexStatusDetail, |=, |)
 
 
 struct HerkulexPacket {
@@ -199,6 +226,7 @@ class HerkulexServo {
     void writeEep(uint8_t reg, uint8_t val);
     void writeEep(uint8_t reg, uint8_t val1, uint8_t val2);
 
+    void getStatus(HerkulexStatusError &status_error, HerkulexStatusDetail &status_detail);
     void reboot();
     void rollbackToFactoryDefaults(bool skipID, bool skipBaud);
 
@@ -207,6 +235,7 @@ class HerkulexServo {
   protected:
     HerkulexServoBus* m_bus;
     uint8_t m_id;
+    HerkulexPacket m_response = {};
 };
 
 #endif

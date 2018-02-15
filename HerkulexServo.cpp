@@ -41,7 +41,7 @@ void HerkulexServoBus::sendPacket(uint8_t id, uint8_t cmd, const uint8_t* data, 
   m_serial->flush();
 }
 
-bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, uint8_t cmd, const uint8_t* data = nullptr, uint8_t data_len = 0){
+bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, uint8_t cmd, const uint8_t* data, uint8_t data_len){
   bool success = false;
 
   update();
@@ -260,6 +260,13 @@ void HerkulexServo::writeEep(uint8_t reg, uint8_t val) {
 void HerkulexServo::writeEep(uint8_t reg, uint8_t val1, uint8_t val2) {
   uint8_t data[] = {reg, 1, val1, val2};
   m_bus->sendPacket(m_id, DRS_CMD_EEP_WRITE, data, 4);
+}
+
+
+void HerkulexServo::getStatus(HerkulexStatusError &error, HerkulexStatusDetail &detail) {
+  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_STAT);
+  error = static_cast<HerkulexStatusError>(m_response.data[0]);
+  detail = static_cast<HerkulexStatusDetail>(m_response.data[1]);
 }
 
 
