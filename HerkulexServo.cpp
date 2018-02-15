@@ -283,6 +283,25 @@ uint16_t HerkulexServo::readRam2(uint8_t reg) {
 }
 
 
+uint8_t HerkulexServo::readEep(uint8_t reg) {
+  uint8_t data[] = {reg, 1};
+  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_EEP_READ, data, 2);
+
+  return m_response.data[2];
+}
+
+uint16_t HerkulexServo::readEep2(uint8_t reg) {
+  uint8_t data[] = {reg, 2};
+  m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_EEP_READ, data, 2);
+
+  uint16_t ret = m_response.data[3];
+  ret = ret << 8;
+  ret = ret | m_response.data[2];
+
+  return ret;
+}
+
+
 void HerkulexServo::getStatus(HerkulexStatusError &error, HerkulexStatusDetail &detail) {
   m_bus->sendPacketAndReadResponse(m_response, m_id, DRS_CMD_STAT);
   error = static_cast<HerkulexStatusError>(m_response.data[0]);

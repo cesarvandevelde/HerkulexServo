@@ -238,6 +238,8 @@ class HerkulexServo {
 
     uint8_t  readRam(uint8_t reg);
     uint16_t readRam2(uint8_t reg);
+    uint8_t  readEep(uint8_t reg);
+    uint16_t readEep2(uint8_t reg);
 
     void getStatus(HerkulexStatusError &status_error, HerkulexStatusDetail &status_detail);
     void reboot();
