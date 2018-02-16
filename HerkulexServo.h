@@ -248,6 +248,7 @@ class HerkulexServo {
     uint8_t  readEep(HerkulexEepRegister reg);
     uint16_t readEep2(HerkulexEepRegister reg);
 
+    uint8_t getID();
     void getStatus(HerkulexStatusError &status_error, HerkulexStatusDetail &status_detail);
     void reboot();
     void rollbackToFactoryDefaults(bool skipID, bool skipBaud);

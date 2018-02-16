@@ -328,6 +328,11 @@ uint16_t HerkulexServo::readEep2(HerkulexEepRegister reg) {
 }
 
 
+uint8_t HerkulexServo::getID() {
+  return m_id;
+}
+
+
 void HerkulexServo::getStatus(HerkulexStatusError &error, HerkulexStatusDetail &detail) {
   m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::Stat);
   error = static_cast<HerkulexStatusError>(m_response.data[0]);
