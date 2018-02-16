@@ -70,30 +70,30 @@ void HerkulexServoBus::update() {
   if (m_serial->available() > 0) {
     // push data to buffer
     while (m_serial->available()) {
-      m_buffer.push(m_serial->read());
+      m_rx_buffer.push(m_serial->read());
       last_serial = micros();
     }
 
     // remove characters before header
-    while (m_buffer.size() >= 2) {
-      if (m_buffer[0] != 0xFF || m_buffer[1] != 0xFF) {
-        m_buffer.shift();
+    while (m_rx_buffer.size() >= 2) {
+      if (m_rx_buffer[0] != 0xFF || m_rx_buffer[1] != 0xFF) {
+        m_rx_buffer.shift();
       } else {
         break;
       }
     }
 
     // see if packet is complete
-    if (m_buffer.size() >= 9) {  // 7 (min packet length) + 2 (status data)
-      uint8_t packet_len = m_buffer[2];
-      if (m_buffer.size() >= packet_len) {
+    if (m_rx_buffer.size() >= 9) {  // 7 (min packet length) + 2 (status data)
+      uint8_t packet_len = m_rx_buffer[2];
+      if (m_rx_buffer.size() >= packet_len) {
         processPacket(false);
         return;
       }
     }
   }
 
-  if (m_buffer.size() > 0) {
+  if (m_rx_buffer.size() > 0) {
     unsigned long now = micros();
 
     if (now - last_serial > DRS_PACKET_RX_TIMEOUT) {
@@ -128,16 +128,16 @@ void HerkulexServoBus::processPacket(bool timeout) {
   uint8_t checksum1;
   uint8_t checksum2;
 
-  if (m_buffer.size() >= 9) {
+  if (m_rx_buffer.size() >= 9) {
     // check length field
-    if (m_buffer[2] > m_buffer.size()) {
-      bytes_to_process = m_buffer.size();
+    if (m_rx_buffer[2] > m_rx_buffer.size()) {
+      bytes_to_process = m_rx_buffer.size();
       packet.error |= HerkulexPacketError::Length;
     } else {
-      bytes_to_process = m_buffer[2];
+      bytes_to_process = m_rx_buffer[2];
     }
   } else {
-    bytes_to_process = m_buffer.size();
+    bytes_to_process = m_rx_buffer.size();
     packet.error |= HerkulexPacketError::Length;
   }
 
@@ -145,7 +145,7 @@ void HerkulexServoBus::processPacket(bool timeout) {
   uint8_t data_idx = 0;
 
   while (bytes_to_process > 0) {
-    uint8_t b = m_buffer.shift();
+    uint8_t b = m_rx_buffer.shift();
     bytes_to_process--;
 
     switch (state) {
@@ -236,52 +236,66 @@ bool HerkulexServoBus::getPacket(HerkulexPacket &packet) {
 }
 
 
+HerkulexPacket HerkulexServo::m_response = {};
+uint8_t HerkulexServo::m_tx_buffer[] = {};
+
+
 HerkulexServo::HerkulexServo(HerkulexServoBus &bus, uint8_t id) : m_bus(&bus), m_id(id) {}
 
 
 void HerkulexServo::writeRam(HerkulexRamRegister reg, uint8_t val) {
-  uint8_t data[] = {static_cast<uint8_t>(reg), 1, val};
-  m_bus->sendPacket(m_id, HerkulexCommand::RamWrite, data, 3);
+  m_tx_buffer[0] = static_cast<uint8_t>(reg);
+  m_tx_buffer[1] = 1;
+  m_tx_buffer[2] = val;
+
+  m_bus->sendPacket(m_id, HerkulexCommand::RamWrite, m_tx_buffer, 3);
 }
 
 
 void HerkulexServo::writeRam2(HerkulexRamRegister reg, uint16_t val) {
-  uint8_t val1, val2;
-  val1 = static_cast<uint8_t>(val);
-  val2 = static_cast<uint8_t>(val >> 8);
+  m_tx_buffer[0] = static_cast<uint8_t>(reg);
+  m_tx_buffer[1] = 2;
+  m_tx_buffer[2] = static_cast<uint8_t>(val);
+  m_tx_buffer[3] = static_cast<uint8_t>(val >> 8);
 
-  uint8_t data[] = {static_cast<uint8_t>(reg), 2, val1, val2};
-  m_bus->sendPacket(m_id, HerkulexCommand::RamWrite, data, 4);
+  m_bus->sendPacket(m_id, HerkulexCommand::RamWrite, m_tx_buffer, 4);
 }
 
 
 void HerkulexServo::writeEep(HerkulexEepRegister reg, uint8_t val) {
-  uint8_t data[] = {static_cast<uint8_t>(reg), 1, val};
-  m_bus->sendPacket(m_id, HerkulexCommand::EepWrite, data, 3);
+  m_tx_buffer[0] = static_cast<uint8_t>(reg);
+  m_tx_buffer[1] = 1;
+  m_tx_buffer[2] = val;
+
+  m_bus->sendPacket(m_id, HerkulexCommand::EepWrite, m_tx_buffer, 3);
 }
 
 
 void HerkulexServo::writeEep2(HerkulexEepRegister reg, uint16_t val) {
-  uint8_t val1, val2;
-  val1 = static_cast<uint8_t>(val);
-  val2 = static_cast<uint8_t>(val >> 8);
+  m_tx_buffer[0] = static_cast<uint8_t>(reg);
+  m_tx_buffer[1] = 2;
+  m_tx_buffer[2] = static_cast<uint8_t>(val);
+  m_tx_buffer[3] = static_cast<uint8_t>(val >> 8);
 
-  uint8_t data[] = {static_cast<uint8_t>(reg), 2, val1, val2};
-  m_bus->sendPacket(m_id, HerkulexCommand::EepWrite, data, 4);
+  m_bus->sendPacket(m_id, HerkulexCommand::EepWrite, m_tx_buffer, 4);
 }
 
 
 uint8_t HerkulexServo::readRam(HerkulexRamRegister reg) {
-  uint8_t data[] = {static_cast<uint8_t>(reg), 1};
-  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::RamRead, data, 2);
+  m_tx_buffer[0] = static_cast<uint8_t>(reg);
+  m_tx_buffer[1] = 1;
+
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::RamRead, m_tx_buffer, 2);
 
   return m_response.data[2];
 }
 
 
 uint16_t HerkulexServo::readRam2(HerkulexRamRegister reg) {
-  uint8_t data[] = {static_cast<uint8_t>(reg), 2};
-  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::RamRead, data, 2);
+  m_tx_buffer[0] = static_cast<uint8_t>(reg);
+  m_tx_buffer[1] = 2;
+
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::RamRead, m_tx_buffer, 2);
 
   uint16_t ret = m_response.data[3];
   ret = ret << 8;
@@ -292,15 +306,19 @@ uint16_t HerkulexServo::readRam2(HerkulexRamRegister reg) {
 
 
 uint8_t HerkulexServo::readEep(HerkulexEepRegister reg) {
-  uint8_t data[] = {static_cast<uint8_t>(reg), 1};
-  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::EepRead, data, 2);
+  m_tx_buffer[0] = static_cast<uint8_t>(reg);
+  m_tx_buffer[1] = 1;
+
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::EepRead, m_tx_buffer, 2);
 
   return m_response.data[2];
 }
 
 uint16_t HerkulexServo::readEep2(HerkulexEepRegister reg) {
-  uint8_t data[] = {static_cast<uint8_t>(reg), 2};
-  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::EepRead, data, 2);
+  m_tx_buffer[0] = static_cast<uint8_t>(reg);
+  m_tx_buffer[1] = 2;
+
+  m_bus->sendPacketAndReadResponse(m_response, m_id, HerkulexCommand::EepRead, m_tx_buffer, 2);
 
   uint16_t ret = m_response.data[3];
   ret = ret << 8;
@@ -323,10 +341,10 @@ void HerkulexServo::reboot() {
 
 
 void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud) {
-  uint8_t data[2] = {};
-  data[0] = skipID ? 1 : 0;
-  data[1] = skipBaud ? 1 : 0;
-  m_bus->sendPacket(m_id, HerkulexCommand::Rollback, data, 2);
+  m_tx_buffer[0] = skipID ? 1 : 0;
+  m_tx_buffer[1] = skipBaud ? 1 : 0;
+
+  m_bus->sendPacket(m_id, HerkulexCommand::Rollback, m_tx_buffer, 2);
 }
 
 

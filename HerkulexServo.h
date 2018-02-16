@@ -30,6 +30,11 @@
 #define DRS_PACKET_RX_BUFFER 3  // HerkulexPacket structs
 #endif
 
+#ifndef DRS_MAX_SCHEDULED_SERVOS
+#define DRS_MAX_SCHEDULED_SERVOS 10
+#endif
+
+#define DRS_SERIAL_TX_BUFFER (1 + DRS_MAX_SCHEDULED_SERVOS * 5)
 
 enum class HerkulexCommand {
   EepWrite  = 0x01,
@@ -220,8 +225,10 @@ class HerkulexServoBus {
   protected:
     Stream* m_serial;
     CircularBuffer<HerkulexPacket, DRS_PACKET_RX_BUFFER> m_packets;
-    CircularBuffer<uint8_t, DRS_SERIAL_RX_BUFFER> m_buffer;
+    CircularBuffer<uint8_t, DRS_SERIAL_RX_BUFFER> m_rx_buffer;
     unsigned long last_serial;
+    uint8_t m_tx_buffer[DRS_SERIAL_TX_BUFFER];
+    uint8_t m_tx_idx = 0;
 
     void processPacket(bool timeout);
 
@@ -254,7 +261,8 @@ class HerkulexServo {
   protected:
     HerkulexServoBus* m_bus;
     uint8_t m_id;
-    HerkulexPacket m_response = {};
+    static HerkulexPacket m_response;
+    static uint8_t m_tx_buffer[5];
 };
 
 #endif
