@@ -247,6 +247,10 @@ class HerkulexServo {
 
     void setLedColor(HerkulexLed color);
 
+    void setTorqueOn();
+    void setTorqueOff();
+    void setBrake();
+
   protected:
     HerkulexServoBus* m_bus;
     uint8_t m_id;

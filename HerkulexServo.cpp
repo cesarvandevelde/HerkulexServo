@@ -322,7 +322,7 @@ void HerkulexServo::reboot() {
 }
 
 
-void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud){
+void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud) {
   uint8_t data[2] = {};
   data[0] = skipID ? 1 : 0;
   data[1] = skipBaud ? 1 : 0;
@@ -330,6 +330,21 @@ void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud){
 }
 
 
-void HerkulexServo::setLedColor(HerkulexLed color){
-  writeRam(HerkulexRamRegister::LedControl, uint8_t(color));
+void HerkulexServo::setLedColor(HerkulexLed color) {
+  writeRam(HerkulexRamRegister::LedControl, static_cast<uint8_t>(color));
+}
+
+
+void HerkulexServo::setTorqueOn() {
+  writeRam(HerkulexRamRegister::TorqueControl, 0x60);
+}
+
+
+void HerkulexServo::setTorqueOff() {
+  writeRam(HerkulexRamRegister::TorqueControl, 0x00);
+}
+
+
+void HerkulexServo::setBrake() {
+  writeRam(HerkulexRamRegister::TorqueControl, 0x40);
 }
