@@ -236,6 +236,42 @@ bool HerkulexServoBus::getPacket(HerkulexPacket &packet) {
 }
 
 
+void HerkulexServoBus::prepareIndividualMove() {
+  m_schedule_state = HerkulexScheduleState::IndividualMove;
+  m_move_tags = 0;
+}
+
+
+void HerkulexServoBus::prepareSynchronizedMove(uint8_t playtime) {
+  m_schedule_state = HerkulexScheduleState::SynchronizedMove;
+  m_tx_buffer[0] = playtime;
+  m_move_tags = 0;
+}
+
+
+void HerkulexServoBus::executeMove() {
+  uint8_t data_len;
+
+  switch (m_schedule_state) {
+    case HerkulexScheduleState::IndividualMove:
+      data_len = m_move_tags * 5;
+      sendPacket(DRS_BROADCAST_ID, HerkulexCommand::IJog, m_tx_buffer, data_len);
+      break;
+
+    case HerkulexScheduleState::SynchronizedMove:
+      data_len = 1 + m_move_tags * 4;
+      sendPacket(DRS_BROADCAST_ID, HerkulexCommand::SJog, m_tx_buffer, data_len);
+      break;
+
+    case HerkulexScheduleState::None:
+      break;
+  }
+
+  m_schedule_state = HerkulexScheduleState::None;
+  m_move_tags = 0;
+}
+
+
 HerkulexPacket HerkulexServo::m_response = {};
 uint8_t HerkulexServo::m_tx_buffer[] = {};
 
@@ -354,6 +390,11 @@ void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud) {
 
 
 void HerkulexServo::setLedColor(HerkulexLed color) {
+  if (color == HerkulexLed::Ignore) {
+    return;
+  }
+
+  m_led = color;
   writeRam(HerkulexRamRegister::LedControl, static_cast<uint8_t>(color));
 }
 
@@ -370,4 +411,69 @@ void HerkulexServo::setTorqueOff() {
 
 void HerkulexServo::setBrake() {
   writeRam(HerkulexRamRegister::TorqueControl, 0x40);
+}
+
+
+void HerkulexServo::setPosition(uint16_t pos, uint8_t playtime, HerkulexLed led) {
+  uint8_t jog_lsb;
+  uint8_t jog_msb;
+  uint8_t set;
+  uint8_t idx_offset;
+
+  jog_lsb = static_cast<uint8_t>(pos);       // LSB
+  jog_msb = static_cast<uint8_t>(pos >> 8);  // MSB
+
+  if (led != HerkulexLed::Ignore) {
+    m_led = led;
+    set = static_cast<uint8_t>(led) << 2;  // SET
+  } else {
+    set = static_cast<uint8_t>(m_led) << 2;
+  }
+
+  switch (m_bus->m_schedule_state) {
+    case HerkulexScheduleState::None:
+      m_tx_buffer[0] = jog_lsb;
+      m_tx_buffer[1] = jog_msb;
+      m_tx_buffer[2] = set;
+      m_tx_buffer[3] = m_id;
+      m_tx_buffer[4] = playtime;
+      m_bus->sendPacket(DRS_BROADCAST_ID, HerkulexCommand::IJog, m_tx_buffer, 5);
+      break;
+
+    case HerkulexScheduleState::IndividualMove:
+      if ( ((m_bus->m_move_tags + 1) * 5) > DRS_SERIAL_TX_BUFFER) {
+        // no room for another move tag, exit
+        return;
+      }
+
+      idx_offset = m_bus->m_move_tags * 5;  // 5 bytes per tag
+
+      // append data to bus tx buffer
+      m_bus->m_tx_buffer[idx_offset    ] = jog_lsb;
+      m_bus->m_tx_buffer[idx_offset + 1] = jog_msb;
+      m_bus->m_tx_buffer[idx_offset + 2] = set;
+      m_bus->m_tx_buffer[idx_offset + 3] = m_id;
+      m_bus->m_tx_buffer[idx_offset + 4] = playtime;
+
+      m_bus->m_move_tags++;
+      break;
+
+    case HerkulexScheduleState::SynchronizedMove:
+      if ( (1 + (m_bus->m_move_tags + 1) * 4) > DRS_SERIAL_TX_BUFFER) {
+        // no room for another move tag, exit
+        return;
+      }
+
+      idx_offset = 1 + m_bus->m_move_tags * 4;  // 4 bytes per tag, 1 byte offset for time
+
+      // append data to bus tx buffer
+      m_bus->m_tx_buffer[idx_offset    ] = jog_lsb;
+      m_bus->m_tx_buffer[idx_offset + 1] = jog_msb;
+      m_bus->m_tx_buffer[idx_offset + 2] = set;
+      m_bus->m_tx_buffer[idx_offset + 3] = m_id;
+
+      m_bus->m_move_tags++;
+      break;
+  }
+
 }

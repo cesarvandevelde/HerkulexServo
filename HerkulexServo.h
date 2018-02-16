@@ -144,7 +144,8 @@ enum class HerkulexLed : uint8_t {
   Yellow = 0x05,
   Cyan   = 0x03,
   Purple = 0x06,
-  White  = 0x07
+  White  = 0x07,
+  Ignore = 0xFF
 };
 
 
@@ -199,6 +200,13 @@ ENUM_FLAG_OPERATOR(HerkulexStatusDetail, &)
 ENUM_FLAG_ASSIGNMENT_OPERATOR(HerkulexStatusDetail, |=, |)
 
 
+enum class HerkulexScheduleState : uint8_t {
+  None = 0,
+  IndividualMove,
+  SynchronizedMove
+};
+
+
 struct HerkulexPacket {
   uint8_t size;
   uint8_t id;
@@ -212,6 +220,9 @@ struct HerkulexPacket {
 };
 
 
+class HerkulexServo;
+
+
 class HerkulexServoBus {
   public:
     HerkulexServoBus();
@@ -222,16 +233,22 @@ class HerkulexServoBus {
     void update();
     bool getPacket(HerkulexPacket &packet);
 
+    void prepareIndividualMove();
+    void prepareSynchronizedMove(uint8_t playtime);
+    void executeMove();
+
   protected:
     Stream* m_serial;
     CircularBuffer<HerkulexPacket, DRS_PACKET_RX_BUFFER> m_packets;
     CircularBuffer<uint8_t, DRS_SERIAL_RX_BUFFER> m_rx_buffer;
     unsigned long last_serial;
     uint8_t m_tx_buffer[DRS_SERIAL_TX_BUFFER];
-    uint8_t m_tx_idx = 0;
+    uint8_t m_move_tags = 0;
+    HerkulexScheduleState m_schedule_state = HerkulexScheduleState::None;
 
     void processPacket(bool timeout);
 
+    friend class HerkulexServo;
 };
 
 class HerkulexServo {
@@ -259,9 +276,13 @@ class HerkulexServo {
     void setTorqueOff();
     void setBrake();
 
+    void setPosition(uint16_t pos, uint8_t playtime = 0, HerkulexLed led = HerkulexLed::Ignore);
+
   protected:
     HerkulexServoBus* m_bus;
     uint8_t m_id;
+    HerkulexLed m_led = HerkulexLed::Off;
+
     static HerkulexPacket m_response;
     static uint8_t m_tx_buffer[5];
 };
