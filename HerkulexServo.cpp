@@ -364,6 +364,19 @@ uint16_t HerkulexServo::readEep2(HerkulexEepRegister reg) {
 }
 
 
+void HerkulexServo::reboot() {
+  m_bus->sendPacket(m_id, HerkulexCommand::Reboot);
+}
+
+
+void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud) {
+  m_tx_buffer[0] = skipID ? 1 : 0;
+  m_tx_buffer[1] = skipBaud ? 1 : 0;
+
+  m_bus->sendPacket(m_id, HerkulexCommand::Rollback, m_tx_buffer, 2);
+}
+
+
 uint8_t HerkulexServo::getID() {
   return m_id;
 }
@@ -375,17 +388,13 @@ void HerkulexServo::getStatus(HerkulexStatusError &error, HerkulexStatusDetail &
   detail = static_cast<HerkulexStatusDetail>(m_response.data[1]);
 }
 
-
-void HerkulexServo::reboot() {
-  m_bus->sendPacket(m_id, HerkulexCommand::Reboot);
+uint16_t HerkulexServo::getPosition() {
+  return readRam2(HerkulexRamRegister::CalibratedPosition) & 0x03FF;
 }
 
 
-void HerkulexServo::rollbackToFactoryDefaults(bool skipID, bool skipBaud) {
-  m_tx_buffer[0] = skipID ? 1 : 0;
-  m_tx_buffer[1] = skipBaud ? 1 : 0;
-
-  m_bus->sendPacket(m_id, HerkulexCommand::Rollback, m_tx_buffer, 2);
+uint16_t HerkulexServo::getRawPosition() {
+  return readRam2(HerkulexRamRegister::AbsolutePosition) & 0x03FF;
 }
 
 
