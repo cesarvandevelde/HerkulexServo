@@ -4,37 +4,37 @@
 #include <Arduino.h>
 #include <CircularBuffer.h>
 
-#define DRS_BROADCAST_ID 0xFE
+#define HERKULEX_BROADCAST_ID 0xFE
 
-#ifndef DRS_PACKET_RX_TIMEOUT
-#define DRS_PACKET_RX_TIMEOUT 500  // microseconds
+#ifndef HERKULEX_PACKET_RX_TIMEOUT
+#define HERKULEX_PACKET_RX_TIMEOUT 500  // microseconds
 #endif
 
-#ifndef DRS_PACKET_RETRIES
-#define DRS_PACKET_RETRIES 5
+#ifndef HERKULEX_PACKET_RETRIES
+#define HERKULEX_PACKET_RETRIES 5
 #endif
 
-#ifndef DRS_PACKET_RESEND_DELAY
-#define DRS_PACKET_RESEND_DELAY 70  // microseconds
+#ifndef HERKULEX_PACKET_RESEND_DELAY
+#define HERKULEX_PACKET_RESEND_DELAY 70  // microseconds
 #endif
 
-#ifndef DRS_PACKET_RX_MAX_DATA
-#define DRS_PACKET_RX_MAX_DATA 10  // bytes
+#ifndef HERKULEX_PACKET_RX_MAX_DATA
+#define HERKULEX_PACKET_RX_MAX_DATA 10  // bytes
 #endif
 
-#ifndef DRS_SERIAL_RX_BUFFER
-#define DRS_SERIAL_RX_BUFFER 30  // bytes
+#ifndef HERKULEX_SERIAL_RX_BUFFER
+#define HERKULEX_SERIAL_RX_BUFFER 30  // bytes
 #endif
 
-#ifndef DRS_PACKET_RX_BUFFER
-#define DRS_PACKET_RX_BUFFER 3  // HerkulexPacket structs
+#ifndef HERKULEX_PACKET_RX_BUFFER
+#define HERKULEX_PACKET_RX_BUFFER 3  // HerkulexPacket structs
 #endif
 
-#ifndef DRS_MAX_SCHEDULED_SERVOS
-#define DRS_MAX_SCHEDULED_SERVOS 10
+#ifndef HERKULEX_MAX_SCHEDULED_SERVOS
+#define HERKULEX_MAX_SCHEDULED_SERVOS 10
 #endif
 
-#define DRS_SERIAL_TX_BUFFER (1 + DRS_MAX_SCHEDULED_SERVOS * 5)
+#define HERKULEX_SERIAL_TX_BUFFER (1 + HERKULEX_MAX_SCHEDULED_SERVOS * 5)
 
 enum class HerkulexCommand {
   EepWrite  = 0x01,
@@ -213,7 +213,7 @@ struct HerkulexPacket {
   HerkulexCommand cmd;
   uint8_t checksum1;
   uint8_t checksum2;
-  uint8_t data[DRS_PACKET_RX_MAX_DATA];
+  uint8_t data[HERKULEX_PACKET_RX_MAX_DATA];
   uint8_t status_error;
   uint8_t status_detail;
   HerkulexPacketError error;
@@ -238,10 +238,10 @@ class HerkulexServoBus {
 
   protected:
     Stream* m_serial;
-    CircularBuffer<HerkulexPacket, DRS_PACKET_RX_BUFFER> m_packets;
-    CircularBuffer<uint8_t, DRS_SERIAL_RX_BUFFER> m_rx_buffer;
+    CircularBuffer<HerkulexPacket, HERKULEX_PACKET_RX_BUFFER> m_packets;
+    CircularBuffer<uint8_t, HERKULEX_SERIAL_RX_BUFFER> m_rx_buffer;
     unsigned long last_serial;
-    uint8_t m_tx_buffer[DRS_SERIAL_TX_BUFFER];
+    uint8_t m_tx_buffer[HERKULEX_SERIAL_TX_BUFFER];
     uint8_t m_move_tags = 0;
     HerkulexScheduleState m_schedule_state = HerkulexScheduleState::None;
 

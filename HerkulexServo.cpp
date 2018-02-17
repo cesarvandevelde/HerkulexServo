@@ -38,7 +38,7 @@ bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t i
   update();
   m_packets.clear();
 
-  for (uint8_t attempts = 0; attempts < DRS_PACKET_RETRIES; attempts++) {
+  for (uint8_t attempts = 0; attempts < HERKULEX_PACKET_RETRIES; attempts++) {
     sendPacket(id, cmd, data, data_len);
 
     while (!getPacket(resp)) {
@@ -49,7 +49,7 @@ bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t i
       success = true;
       break;
     } else {
-      delayMicroseconds(DRS_PACKET_RESEND_DELAY);
+      delayMicroseconds(HERKULEX_PACKET_RESEND_DELAY);
     }
   }
 
@@ -87,7 +87,7 @@ void HerkulexServoBus::update() {
   if (m_rx_buffer.size() > 0) {
     unsigned long now = micros();
 
-    if (now - last_serial > DRS_PACKET_RX_TIMEOUT) {
+    if (now - last_serial > HERKULEX_PACKET_RX_TIMEOUT) {
       processPacket(true);
       last_serial = now;
     }
@@ -194,8 +194,8 @@ void HerkulexServoBus::processPacket(bool timeout) {
         data_idx++;
 
         // clamp idx to size of data array
-        if (data_idx >= DRS_PACKET_RX_MAX_DATA) {
-          data_idx = DRS_PACKET_RX_MAX_DATA - 1;
+        if (data_idx >= HERKULEX_PACKET_RX_MAX_DATA) {
+          data_idx = HERKULEX_PACKET_RX_MAX_DATA - 1;
         }
         break;
     }
@@ -246,12 +246,12 @@ void HerkulexServoBus::executeMove() {
   switch (m_schedule_state) {
     case HerkulexScheduleState::IndividualMove:
       data_len = m_move_tags * 5;
-      sendPacket(DRS_BROADCAST_ID, HerkulexCommand::IJog, m_tx_buffer, data_len);
+      sendPacket(HERKULEX_BROADCAST_ID, HerkulexCommand::IJog, m_tx_buffer, data_len);
       break;
 
     case HerkulexScheduleState::SynchronizedMove:
       data_len = 1 + m_move_tags * 4;
-      sendPacket(DRS_BROADCAST_ID, HerkulexCommand::SJog, m_tx_buffer, data_len);
+      sendPacket(HERKULEX_BROADCAST_ID, HerkulexCommand::SJog, m_tx_buffer, data_len);
       break;
 
     case HerkulexScheduleState::None:
@@ -437,11 +437,11 @@ void HerkulexServo::setPosition(uint16_t pos, uint8_t playtime, HerkulexLed led)
       m_tx_buffer[2] = set;
       m_tx_buffer[3] = m_id;
       m_tx_buffer[4] = playtime;
-      m_bus->sendPacket(DRS_BROADCAST_ID, HerkulexCommand::IJog, m_tx_buffer, 5);
+      m_bus->sendPacket(HERKULEX_BROADCAST_ID, HerkulexCommand::IJog, m_tx_buffer, 5);
       break;
 
     case HerkulexScheduleState::IndividualMove:
-      if ( ((m_bus->m_move_tags + 1) * 5) > DRS_SERIAL_TX_BUFFER) {
+      if ( ((m_bus->m_move_tags + 1) * 5) > HERKULEX_SERIAL_TX_BUFFER) {
         // no room for another move tag, exit
         return;
       }
@@ -459,7 +459,7 @@ void HerkulexServo::setPosition(uint16_t pos, uint8_t playtime, HerkulexLed led)
       break;
 
     case HerkulexScheduleState::SynchronizedMove:
-      if ( (1 + (m_bus->m_move_tags + 1) * 4) > DRS_SERIAL_TX_BUFFER) {
+      if ( (1 + (m_bus->m_move_tags + 1) * 4) > HERKULEX_SERIAL_TX_BUFFER) {
         // no room for another move tag, exit
         return;
       }
