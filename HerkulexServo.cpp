@@ -36,7 +36,7 @@ bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t i
   bool success = false;
 
   update();
-  m_packets.clear();
+  m_rx_packet_ready = false;
 
 #ifdef HERKULEX_DEBUG_RX_STATS
   m_stats_totals++;
@@ -75,7 +75,7 @@ void HerkulexServoBus::update() {
     // push data to buffer
     while (m_serial->available()) {
       m_rx_buffer.push(m_serial->read());
-      last_serial = micros();
+      m_last_serial = micros();
     }
 
     // remove characters before header
@@ -100,9 +100,9 @@ void HerkulexServoBus::update() {
   if (m_rx_buffer.size() > 0) {
     unsigned long now = micros();
 
-    if (now - last_serial > HERKULEX_PACKET_RX_TIMEOUT) {
+    if (now - m_last_serial > HERKULEX_PACKET_RX_TIMEOUT) {
       processPacket(true);
-      last_serial = now;
+      m_last_serial = now;
     }
   }
 }
@@ -122,10 +122,10 @@ namespace {
 }
 
 void HerkulexServoBus::processPacket(bool timeout) {
-  HerkulexPacket packet = {};
+  m_rx_packet = {};
 
   if (timeout) {
-    packet.error |= HerkulexPacketError::Timeout;
+    m_rx_packet.error |= HerkulexPacketError::Timeout;
   }
 
   uint8_t bytes_to_process;
@@ -136,13 +136,13 @@ void HerkulexServoBus::processPacket(bool timeout) {
     // check length field
     if (m_rx_buffer[2] > m_rx_buffer.size()) {
       bytes_to_process = m_rx_buffer.size();
-      packet.error |= HerkulexPacketError::Length;
+      m_rx_packet.error |= HerkulexPacketError::Length;
     } else {
       bytes_to_process = m_rx_buffer[2];
     }
   } else {
     bytes_to_process = m_rx_buffer.size();
-    packet.error |= HerkulexPacketError::Length;
+    m_rx_packet.error |= HerkulexPacketError::Length;
   }
 
   HerkulexParserState state = HerkulexParserState::Header1;
@@ -168,23 +168,23 @@ void HerkulexServoBus::processPacket(bool timeout) {
         break;
 
       case HerkulexParserState::Length:
-        packet.size = b;
+        m_rx_packet.size = b;
         checksum1 = b;
         state = HerkulexParserState::ID;
         break;
 
       case HerkulexParserState::ID:
-        packet.id = b;
+        m_rx_packet.id = b;
         checksum1 ^= b;
         state = HerkulexParserState::Command;
         break;
 
       case HerkulexParserState::Command:
         if (b > 0x40) {
-          packet.cmd = static_cast<HerkulexCommand>(b - 0x40);
+          m_rx_packet.cmd = static_cast<HerkulexCommand>(b - 0x40);
         } else {
-          packet.cmd = static_cast<HerkulexCommand>(b);
-          packet.error |= HerkulexPacketError::Command;
+          m_rx_packet.cmd = static_cast<HerkulexCommand>(b);
+          m_rx_packet.error |= HerkulexPacketError::Command;
         }
         checksum1 ^= b;
 
@@ -192,17 +192,17 @@ void HerkulexServoBus::processPacket(bool timeout) {
         break;
 
       case HerkulexParserState::Checksum1:
-        packet.checksum1 = b;
+        m_rx_packet.checksum1 = b;
         state = HerkulexParserState::Checksum2;
         break;
 
       case HerkulexParserState::Checksum2:
-        packet.checksum2 = b;
+        m_rx_packet.checksum2 = b;
         state = HerkulexParserState::Data;
         break;
 
       case HerkulexParserState::Data:
-        packet.data[data_idx] = b;
+        m_rx_packet.data[data_idx] = b;
         checksum1 ^= b;
         data_idx++;
 
@@ -215,27 +215,29 @@ void HerkulexServoBus::processPacket(bool timeout) {
   }
 
   if (data_idx >= 2) {
-    packet.status_error = packet.data[data_idx - 2];
-    packet.status_detail = packet.data[data_idx - 1];
+    m_rx_packet.status_error = m_rx_packet.data[data_idx - 2];
+    m_rx_packet.status_detail = m_rx_packet.data[data_idx - 1];
   }
 
   checksum1 = checksum1 & 0xFE;
   checksum2 = (~checksum1) & 0xFE;
 
-  if (packet.checksum1 != checksum1 || packet.checksum2 != checksum2) {
-    packet.error |= HerkulexPacketError::Checksum;
+  if (m_rx_packet.checksum1 != checksum1 || m_rx_packet.checksum2 != checksum2) {
+    m_rx_packet.error |= HerkulexPacketError::Checksum;
   }
 
-  m_packets.push(packet);
+  m_rx_packet_ready = true;
 }
 
 
 bool HerkulexServoBus::getPacket(HerkulexPacket &packet) {
-  if (m_packets.size() == 0) {
+  if (!m_rx_packet_ready) {
     return false;
   }
 
-  packet = m_packets.shift();
+  packet = m_rx_packet;
+  m_rx_packet_ready = false;
+
   return true;
 }
 

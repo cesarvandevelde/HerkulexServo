@@ -11,7 +11,7 @@
 #endif
 
 #ifndef HERKULEX_PACKET_RETRIES
-#define HERKULEX_PACKET_RETRIES 5
+#define HERKULEX_PACKET_RETRIES 6
 #endif
 
 #ifndef HERKULEX_PACKET_RESEND_DELAY
@@ -24,10 +24,6 @@
 
 #ifndef HERKULEX_SERIAL_RX_BUFFER
 #define HERKULEX_SERIAL_RX_BUFFER 30  // bytes
-#endif
-
-#ifndef HERKULEX_PACKET_RX_BUFFER
-#define HERKULEX_PACKET_RX_BUFFER 3  // HerkulexPacket structs
 #endif
 
 #ifndef HERKULEX_MAX_SCHEDULED_SERVOS
@@ -250,9 +246,12 @@ class HerkulexServoBus {
 
   protected:
     Stream* m_serial;
-    CircularBuffer<HerkulexPacket, HERKULEX_PACKET_RX_BUFFER> m_packets;
     CircularBuffer<uint8_t, HERKULEX_SERIAL_RX_BUFFER> m_rx_buffer;
-    unsigned long last_serial;
+    unsigned long m_last_serial;
+
+    HerkulexPacket m_rx_packet = {};
+    bool m_rx_packet_ready = false;
+
     uint8_t m_tx_buffer[HERKULEX_SERIAL_TX_BUFFER];
     uint8_t m_move_tags = 0;
     HerkulexScheduleState m_schedule_state = HerkulexScheduleState::None;
