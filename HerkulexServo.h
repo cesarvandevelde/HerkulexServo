@@ -225,8 +225,7 @@ class HerkulexServo;
 
 class HerkulexServoBus {
   public:
-    HerkulexServoBus();
-    void begin(Stream &serial_connection);
+    HerkulexServoBus(Stream &serial_connection);
     void sendPacket(uint8_t id, HerkulexCommand cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
     bool sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, HerkulexCommand cmd, const uint8_t* data = nullptr, uint8_t data_len = 0);
 

@@ -1,19 +1,10 @@
 #include "HerkulexServo.h"
 
 
-HerkulexServoBus::HerkulexServoBus() : m_serial(nullptr) {}
-
-
-void HerkulexServoBus::begin(Stream &serial_connection) {
-  m_serial = &serial_connection;
-}
+HerkulexServoBus::HerkulexServoBus(Stream &serial_connection) : m_serial(&serial_connection) {}
 
 
 void HerkulexServoBus::sendPacket(uint8_t id, HerkulexCommand cmd, const uint8_t* data, uint8_t data_len) {
-  if (!m_serial) {
-    return;
-  }
-
   uint8_t checksum1;
   uint8_t checksum2;
   uint8_t packet_size = 7 + data_len;
