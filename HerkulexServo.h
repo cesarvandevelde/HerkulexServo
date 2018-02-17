@@ -34,7 +34,14 @@
 #define HERKULEX_MAX_SCHEDULED_SERVOS 10
 #endif
 
+#ifndef HERKULEX_SERIAL_TX_BUFFER
 #define HERKULEX_SERIAL_TX_BUFFER (1 + HERKULEX_MAX_SCHEDULED_SERVOS * 5)
+#endif
+
+#ifdef HERKULEX_DEBUG
+#define HERKULEX_DEBUG_RX_STATS
+#endif
+
 
 enum class HerkulexCommand {
   EepWrite  = 0x01,
@@ -232,6 +239,11 @@ class HerkulexServoBus {
     void update();
     bool getPacket(HerkulexPacket &packet);
 
+#ifdef HERKULEX_DEBUG_RX_STATS
+    void resetRxStatistics();
+    void printRxStatistics(Stream &output);
+#endif
+
     void prepareIndividualMove();
     void prepareSynchronizedMove(uint8_t playtime);
     void executeMove();
@@ -244,6 +256,12 @@ class HerkulexServoBus {
     uint8_t m_tx_buffer[HERKULEX_SERIAL_TX_BUFFER];
     uint8_t m_move_tags = 0;
     HerkulexScheduleState m_schedule_state = HerkulexScheduleState::None;
+
+#ifdef HERKULEX_DEBUG_RX_STATS
+    uint16_t m_stats_attempts[HERKULEX_PACKET_RETRIES] = {};
+    uint16_t m_stats_fails = 0;
+    uint16_t m_stats_totals = 0;
+#endif
 
     void processPacket(bool timeout);
 

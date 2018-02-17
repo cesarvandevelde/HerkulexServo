@@ -38,6 +38,10 @@ bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t i
   update();
   m_packets.clear();
 
+#ifdef HERKULEX_DEBUG_RX_STATS
+  m_stats_totals++;
+#endif
+
   for (uint8_t attempts = 0; attempts < HERKULEX_PACKET_RETRIES; attempts++) {
     sendPacket(id, cmd, data, data_len);
 
@@ -47,11 +51,20 @@ bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t i
 
     if ( (resp.error == HerkulexPacketError:: None) && (resp.id == id) && (resp.cmd == cmd) ) {
       success = true;
+
+#ifdef HERKULEX_DEBUG_RX_STATS
+      m_stats_attempts[attempts]++;
+#endif
+
       break;
     } else {
       delayMicroseconds(HERKULEX_PACKET_RESEND_DELAY);
     }
   }
+
+#ifdef HERKULEX_DEBUG_RX_STATS
+  if (!success) { m_stats_fails++; }
+#endif
 
   return success;
 }
@@ -225,6 +238,32 @@ bool HerkulexServoBus::getPacket(HerkulexPacket &packet) {
   packet = m_packets.shift();
   return true;
 }
+
+#ifdef HERKULEX_DEBUG_RX_STATS
+void HerkulexServoBus::resetRxStatistics() {
+  m_stats_fails = 0;
+  m_stats_totals = 0;
+
+  for (uint8_t i = 0; i < HERKULEX_PACKET_RETRIES; i++) {
+    m_stats_attempts[i] = 0;
+  }
+}
+
+
+void HerkulexServoBus::printRxStatistics(Stream &output) {
+  output.print(m_stats_fails);
+  output.print(" fails out of ");
+  output.print(m_stats_totals);
+  output.println(" attempts.");
+
+  for (uint8_t i = 0; i < HERKULEX_PACKET_RETRIES; i++) {
+    output.print("-> ");
+    output.print(i);
+    output.print(" retries: ");
+    output.println(m_stats_attempts[i]);
+  }
+}
+#endif
 
 
 void HerkulexServoBus::prepareIndividualMove() {
