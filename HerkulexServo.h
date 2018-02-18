@@ -7,7 +7,7 @@
 #define HERKULEX_BROADCAST_ID 0xFE
 
 #ifndef HERKULEX_PACKET_RX_TIMEOUT
-#define HERKULEX_PACKET_RX_TIMEOUT 500  // microseconds
+#define HERKULEX_PACKET_RX_TIMEOUT 100  // microseconds
 #endif
 
 #ifndef HERKULEX_PACKET_RETRIES
@@ -295,15 +295,21 @@ class HerkulexServo {
     void setTorqueOff();
     void setBrake();
 
+    void enablePositionControlMode();
+    void enableSpeedControlMode();
     void setPosition(uint16_t pos, uint8_t playtime = 0, HerkulexLed led = HerkulexLed::Ignore);
+    void setSpeed(int16_t speed, uint8_t playtime = 0, HerkulexLed led = HerkulexLed::Ignore);
 
   protected:
     HerkulexServoBus* m_bus;
     uint8_t m_id;
     HerkulexLed m_led = HerkulexLed::Off;
+    bool m_position_control_mode = true;
 
     static HerkulexPacket m_response;
     static uint8_t m_tx_buffer[5];
+
+    void jog(uint8_t jog_lsb, uint8_t jog_msb, uint8_t set, uint8_t playtime);
 };
 
 #endif

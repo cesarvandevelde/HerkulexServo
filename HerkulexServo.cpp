@@ -32,7 +32,7 @@ void HerkulexServoBus::sendPacket(uint8_t id, HerkulexCommand cmd, const uint8_t
   m_serial->flush();
 }
 
-bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, HerkulexCommand cmd, const uint8_t* data, uint8_t data_len){
+bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, HerkulexCommand cmd, const uint8_t* data, uint8_t data_len) {
   bool success = false;
 
   update();
@@ -455,21 +455,107 @@ void HerkulexServo::setBrake() {
 }
 
 
+void HerkulexServo::enablePositionControlMode() {
+  if (m_position_control_mode) {
+    return;
+  }
+  m_position_control_mode = true;
+
+  uint8_t set;
+
+  set = static_cast<uint8_t>(m_led) << 2;
+  set |= 0x02;  // continuous rotation;
+  set |= 0x20;  // jog invalid
+
+  m_tx_buffer[0] = 0x00;  // jog LSB
+  m_tx_buffer[1] = 0x00;  // jog MSB
+  m_tx_buffer[2] = set;
+  m_tx_buffer[3] = m_id;
+  m_tx_buffer[4] = 0x00;  // playtime
+  m_bus->sendPacket(HERKULEX_BROADCAST_ID, HerkulexCommand::IJog, m_tx_buffer, 5);
+}
+
+
+void HerkulexServo::enableSpeedControlMode() {
+  if (!m_position_control_mode) {
+    return;
+  }
+  m_position_control_mode = false;
+
+  uint8_t set;
+
+  set = static_cast<uint8_t>(m_led) << 2;
+  set |= 0x20;  // jog invalid
+  // continuous rotation bit (0x02) is implicitly set to 0;
+
+  m_tx_buffer[0] = 0x00;  // jog LSB
+  m_tx_buffer[1] = 0x00;  // jog MSB
+  m_tx_buffer[2] = set;
+  m_tx_buffer[3] = m_id;
+  m_tx_buffer[4] = 0x00;  // playtime
+  m_bus->sendPacket(HERKULEX_BROADCAST_ID, HerkulexCommand::IJog, m_tx_buffer, 5);
+}
+
+
 void HerkulexServo::setPosition(uint16_t pos, uint8_t playtime, HerkulexLed led) {
+  if (!m_position_control_mode) {
+    return;
+  }
+
   uint8_t jog_lsb;
   uint8_t jog_msb;
   uint8_t set;
-  uint8_t idx_offset;
 
-  jog_lsb = static_cast<uint8_t>(pos);       // LSB
-  jog_msb = static_cast<uint8_t>(pos >> 8);  // MSB
+  jog_lsb = static_cast<uint8_t>(pos);
+  jog_msb = static_cast<uint8_t>(pos >> 8);
 
   if (led != HerkulexLed::Ignore) {
     m_led = led;
-    set = static_cast<uint8_t>(led) << 2;  // SET
+    set = static_cast<uint8_t>(led) << 2;
   } else {
     set = static_cast<uint8_t>(m_led) << 2;
   }
+
+  jog(jog_lsb, jog_msb, set, playtime);
+}
+
+void HerkulexServo::setSpeed(int16_t speed, uint8_t playtime = 0, HerkulexLed led) {
+  if (m_position_control_mode) {
+    return;
+  }
+
+  uint8_t jog_lsb;
+  uint8_t jog_msb;
+  uint8_t set;
+  uint16_t speed_raw;
+
+  if (speed >= 0) {
+    speed_raw = speed;
+  } else {
+    speed_raw = -speed;
+  }
+  speed_raw &= 0x03FF;  // clamp to max 1023
+
+  jog_lsb = static_cast<uint8_t>(speed_raw);
+  jog_msb = static_cast<uint8_t>(speed_raw >> 8);
+
+  if (speed < 0) {
+    jog_msb |= 0x40;
+  }
+
+  if (led != HerkulexLed::Ignore) {
+    m_led = led;
+    set = static_cast<uint8_t>(led) << 2;
+  } else {
+    set = static_cast<uint8_t>(m_led) << 2;
+  }
+  set |= 0x02;  // continuous rotation flag;
+
+  jog(jog_lsb, jog_msb, set, playtime);
+}
+
+void HerkulexServo::jog(uint8_t jog_lsb, uint8_t jog_msb, uint8_t set, uint8_t playtime) {
+  uint8_t idx_offset;
 
   switch (m_bus->m_schedule_state) {
     case HerkulexScheduleState::None:
