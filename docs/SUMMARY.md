@@ -20,11 +20,10 @@
   * [Move two](move-two.md)
   * [Bus scanner](bus-scanner.md)
 * Advanced concepts
-  * Reading / writing to servo memory
   * [Continuous rotation mode](continuous-rotation.md)
+  * [Servo memory](servo-memory.md)
   * Programming the servo ID
   * Broadcast ID
-  * Continuous rotation mode
   * Precompiler options
 * API Reference
   * HerkulexBus
