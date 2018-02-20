@@ -2,3 +2,5 @@
 .AppleDouble
 .LSOverride
 ._*
+node_modules
+_book
