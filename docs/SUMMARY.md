@@ -21,6 +21,7 @@
   * [Bus scanner](bus-scanner.md)
 * Advanced concepts
   * Reading / writing to servo memory
+  * [Continuous rotation mode](continuous-rotation.md)
   * Programming the servo ID
   * Broadcast ID
   * Continuous rotation mode
