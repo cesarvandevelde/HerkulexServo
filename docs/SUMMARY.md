@@ -22,9 +22,8 @@
 * Advanced concepts
   * [Continuous rotation mode](continuous-rotation.md)
   * [Servo memory](servo-memory.md)
-  * Programming the servo ID
-  * Broadcast ID
-  * Precompiler options
+  * [Servo ID](servo-id.md)
+  * [Precompiler options](preprocessor-options.md)
 * API Reference
   * HerkulexBus
   * HerkulexServo

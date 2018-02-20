@@ -10,4 +10,4 @@ uint16_t pos = 512 + uint16_t(pos_degree / 0.325f);
 
 **Note:** Be sure to change `SERVO_ID` to the ID of the servo you want to sweep.
 
-[include, lang:"cpp"](../examples/Sweep/Sweep.ino)
+[include, lang:"c_cpp"](../examples/Sweep/Sweep.ino)
