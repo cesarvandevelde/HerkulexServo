@@ -247,7 +247,7 @@ class HerkulexServoBus {
   protected:
     Stream* m_serial;
     CircularBuffer<uint8_t, HERKULEX_SERIAL_RX_BUFFER> m_rx_buffer;
-    unsigned long m_last_serial;
+    unsigned long m_last_serial = 0;
 
     HerkulexPacket m_rx_packet = {};
     bool m_rx_packet_ready = false;

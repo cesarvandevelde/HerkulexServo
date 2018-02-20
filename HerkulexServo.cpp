@@ -34,6 +34,7 @@ void HerkulexServoBus::sendPacket(uint8_t id, HerkulexCommand cmd, const uint8_t
 
 bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t id, HerkulexCommand cmd, const uint8_t* data, uint8_t data_len) {
   bool success = false;
+  unsigned long time_started;
 
   update();
   m_rx_packet_ready = false;
@@ -45,7 +46,9 @@ bool HerkulexServoBus::sendPacketAndReadResponse(HerkulexPacket &resp, uint8_t i
   for (uint8_t attempts = 0; attempts < HERKULEX_PACKET_RETRIES; attempts++) {
     sendPacket(id, cmd, data, data_len);
 
-    while (!getPacket(resp)) {
+    time_started = millis();
+    while ( !getPacket(resp) && ((millis() - time_started) < HERKULEX_PACKET_RX_TIMEOUT) ) {
+    //while ( !getPacket(resp) ) {
       update();
     }
 
