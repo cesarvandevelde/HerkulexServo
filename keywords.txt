@@ -1,0 +1,147 @@
+# Classes (KEYWORD1)
+
+HerkulexCommand	KEYWORD1
+HerkulexEepRegister	KEYWORD1
+HerkulexRamRegister	KEYWORD1
+HerkulexLed	KEYWORD1
+HerkulexPacketError	KEYWORD1
+HerkulexStatusError	KEYWORD1
+HerkulexStatusDetail	KEYWORD1
+HerkulexScheduleState	KEYWORD1
+HerkulexPacket	KEYWORD1
+HerkulexServo	KEYWORD1
+HerkulexServoBus	KEYWORD1
+
+# Methods and functions (KEYWORD2)
+
+sendPacket	KEYWORD2
+sendPacketAndReadResponse	KEYWORD2
+update	KEYWORD2
+getPacket	KEYWORD2
+resetRxStatistics	KEYWORD2
+printRxStatistics	KEYWORD2
+prepareIndividualMove	KEYWORD2
+prepareSynchronizedMove	KEYWORD2
+executeMove	KEYWORD2
+writeRam	KEYWORD2
+writeRam2	KEYWORD2
+writeEep	KEYWORD2
+writeEep2	KEYWORD2
+readRam	KEYWORD2
+readRam2	KEYWORD2
+readEep	KEYWORD2
+readEep2	KEYWORD2
+reboot	KEYWORD2
+rollbackToFactoryDefaults	KEYWORD2
+getID	KEYWORD2
+getStatus	KEYWORD2
+getPosition	KEYWORD2
+getRawPosition	KEYWORD2
+setLedColor	KEYWORD2
+setTorqueOn	KEYWORD2
+setTorqueOff	KEYWORD2
+setBrake	KEYWORD2
+enablePositionControlMode	KEYWORD2
+enableSpeedControlMode	KEYWORD2
+setPosition	KEYWORD2
+setSpeed	KEYWORD2
+
+
+# Constants (LITERAL1)
+EepWrite	LITERAL1
+EepRead	LITERAL1
+RamWrite	LITERAL1
+RamRead	LITERAL1
+IJog	LITERAL1
+SJog	LITERAL1
+Stat	LITERAL1
+Rollback	LITERAL1
+Reboot	LITERAL1
+
+ModelNo1	LITERAL1
+ModelNo2	LITERAL1
+Version1	LITERAL1
+Version2	LITERAL1
+BaudRate	LITERAL1
+ID	LITERAL1
+AckPolicy	LITERAL1
+AlarmLedPolicy	LITERAL1
+TorquePolicy	LITERAL1
+MaxTemperature	LITERAL1
+MinVoltage	LITERAL1
+MaxVoltage	LITERAL1
+AccelerationRatio	LITERAL1
+MaxAccelerationTime	LITERAL1
+DeadZone	LITERAL1
+SaturatorOffset	LITERAL1
+SaturatorSlope	LITERAL1
+PwmOffset	LITERAL1
+MinPwm	LITERAL1
+MaxPwm	LITERAL1
+OverloadPwmThreshold	LITERAL1
+MinPosition	LITERAL1
+MaxPosition	LITERAL1
+PositionKp	LITERAL1
+PositionKd	LITERAL1
+PositionKi	LITERAL1
+PositionFF1stGain	LITERAL1
+PositionFF2ndGain	LITERAL1
+LedBlinkPeriod	LITERAL1
+AdcFaultCheckPeriod	LITERAL1
+PacketGarbageCheckPeriod	LITERAL1
+StopDetectionPeriod	LITERAL1
+OverloadProtectionPeriod	LITERAL1
+StopThreshold	LITERAL1
+InPositionMargin	LITERAL1
+CalibrationDifference	LITERAL1
+StatusError	LITERAL1
+StatusDetail	LITERAL1
+TorqueControl	LITERAL1
+LedControl	LITERAL1
+Voltage	LITERAL1
+Temperature	LITERAL1
+CurrentControlMode	LITERAL1
+Tick	LITERAL1
+CalibratedPosition	LITERAL1
+AbsolutePosition	LITERAL1
+DifferentialPosition	LITERAL1
+Pwm	LITERAL1
+AbsoluteGoalPosition	LITERAL1
+AbsoluteDesiredTrajPos	LITERAL1
+DesiredVelocity	LITERAL1
+
+Off	LITERAL1
+Red	LITERAL1
+Green	LITERAL1
+Blue	LITERAL1
+Yellow	LITERAL1
+Cyan	LITERAL1
+Purple	LITERAL1
+White	LITERAL1
+Ignore	LITERAL1
+
+None	LITERAL1
+Timeout	LITERAL1
+Length	LITERAL1
+Command	LITERAL1
+Checksum	LITERAL1
+
+None	LITERAL1
+InputVoltage	LITERAL1
+PotLimit	LITERAL1
+TemperatureLimit	LITERAL1
+InvalidPacket	LITERAL1
+Overload	LITERAL1
+DriverFault	LITERAL1
+EEPDistorted	LITERAL1
+Reserved	LITERAL1
+
+None	LITERAL1
+Moving	LITERAL1
+InPosition	LITERAL1
+ChecksumError	LITERAL1
+UnknownCommand	LITERAL1
+ExceedRegRange	LITERAL1
+GarbageDetected	LITERAL1
+MotorOn	LITERAL1
+Reserved	LITERAL1
