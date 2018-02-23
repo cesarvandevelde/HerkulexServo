@@ -8,6 +8,22 @@ Giacco. Make sure this library is installed as well.
 TODO
 
 ## Through PlatformIO
-TODO
+{% method %}
+Simply add `HerkulexServo` as a dependency to your `platformio.ini` file. The
+library and its dependencies will be installed automatically
+
+{% sample lang="C++" %}
+Example config for `platformio.ini`:
+
+```ini
+[env:nanoatmega328]
+platform = atmelavr
+board = nanoatmega328
+framework = arduino
+lib_deps =
+  HerkulexServo
+```
+
+{% endmethod %}
 
 [circularbuffer]: https://github.com/rlogiacco/CircularBuffer
