@@ -522,7 +522,7 @@ void HerkulexServo::setPosition(uint16_t pos, uint8_t playtime, HerkulexLed led)
   jog(jog_lsb, jog_msb, set, playtime);
 }
 
-void HerkulexServo::setSpeed(int16_t speed, uint8_t playtime = 0, HerkulexLed led) {
+void HerkulexServo::setSpeed(int16_t speed, uint8_t playtime, HerkulexLed led) {
   if (m_position_control_mode) {
     return;
   }
