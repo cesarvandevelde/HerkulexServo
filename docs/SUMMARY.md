@@ -25,9 +25,10 @@
   * [Servo ID](servo-id.md)
   * [Precompiler options](preprocessor-options.md)
 * API Reference
-  * HerkulexBus
-  * HerkulexServo
-  * Constants and Enums
+  * [HerkulexBus](api-herkulex-bus.md)
+  * [HerkulexServo](api-herkulex-servo.md)
+  * [HerkulexPacket](api-herkulex-packet.md)
+  * [Constants and Enums](api-consts-enums.md)
 
 ---
 
