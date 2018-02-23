@@ -2,6 +2,9 @@
 
 * [Introduction](README.md)
 * [Installation](installation.md)
+
+### Basic usage
+
 * [Tutorial](tutorial.md)
   * [Hookup](tutorial.md#hookup)
   * [Include the library](tutorial.md#library)
@@ -19,11 +22,13 @@
   * [Coordinated move](coordinated-move.md)
   * [Move two](move-two.md)
   * [Bus scanner](bus-scanner.md)
-* Advanced concepts
-  * [Continuous rotation mode](continuous-rotation.md)
-  * [Servo memory](servo-memory.md)
-  * [Servo ID](servo-id.md)
-  * [Precompiler options](preprocessor-options.md)
+
+### Advanced concepts
+
+* [Continuous rotation mode](continuous-rotation.md)
+* [Servo memory](servo-memory.md)
+* [Servo ID](servo-id.md)
+* [Precompiler options](preprocessor-options.md)
 * API Reference
   * [HerkulexBus](api-herkulex-bus.md)
   * [HerkulexServo](api-herkulex-servo.md)
