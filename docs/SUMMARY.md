@@ -32,4 +32,4 @@
 
 ---
 
-* Contributing
+* [Contributing](contributing.md)
