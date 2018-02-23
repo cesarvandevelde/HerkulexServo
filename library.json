@@ -1,0 +1,19 @@
+{
+  "name": "HerkulexServo",
+  "keywords": "herkulex, servo, smart servo, drs-0101, drs-0201, actuator, uart",
+  "description": "A library for communicating with Herkulex smart servos.",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/cesarvandevelde/HerkulexServo.git"
+  },
+  "dependencies":
+  {
+    "name": "CircularBuffer",
+    "authors": "AgileWare",
+    "frameworks": "arduino"
+  },
+  "version": "0.1.0",
+  "frameworks": "arduino",
+  "platforms": "*"
+}
