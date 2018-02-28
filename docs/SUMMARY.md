@@ -21,6 +21,7 @@
   * [Sweep](sweep.md)
   * [Coordinated move](coordinated-move.md)
   * [Move two](move-two.md)
+  * [Record and Play](record-and-play.md)
   * [Bus scanner](bus-scanner.md)
 
 ### Advanced concepts

@@ -1,3 +1,16 @@
+<div style="width: 60%; margin-left: 20%;">
+  <div style='position: relative; padding-bottom: 56.25%;'>
+    <iframe src='https://gfycat.com/ifr/DismalLoathsomeAmericancurl'
+            frameborder='0'
+            scrolling='no'
+            width='100%'
+            height='100%'
+            style='position: absolute; top: 0; left: 0'
+            allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
 # Introduction to the HerkulexServo library
 This library allows you to control [Herkulex][herkulex] smart servos directly
 from an Arduino. These servos are more expensive than the well-known RC-hobby

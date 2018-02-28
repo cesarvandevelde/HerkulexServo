@@ -1,4 +1,7 @@
 # HerkulexServo
+
+![](https://thumbs.gfycat.com/DismalLoathsomeAmericancurl-size_restricted.gif)
+
 This library allows you to control [Herkulex][herkulex] smart servos directly
 from an Arduino. These servos are more expensive than the well-known RC-hobby
 servos and they are also a bit more complex to use, but they have some cool
