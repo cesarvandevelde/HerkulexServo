@@ -2,7 +2,7 @@
 #define __HERKULEXSERVO_H__
 
 #include <Arduino.h>
-#include <CircularBuffer.h>
+#include <CircularBuffer.hpp>
 
 #define HERKULEX_BROADCAST_ID 0xFE
 
